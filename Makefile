@@ -30,7 +30,7 @@ CODE	= -fpic # -fpcc-struct-return
 
 MAJOR =  0
 MINOR =  9
-PATCHLEVEL = 1
+PATCHLEVEL = 2
 VERSION = $(MAJOR).$(MINOR).$(PATCHLEVEL)
 
 include .cache-$(shell uname -n)
@@ -116,6 +116,8 @@ else
 		# use prefix variable from environment
 endif
 
+ETCRT = $(PREFIX)
+
 ifeq (_$(UID)_,_0_)
 	# root is compiling
 	CODEPREFIX=$(PREFIX)
@@ -123,11 +125,15 @@ else
 	ifeq (_$(PREFIX)_,_/usr_)
 		# a debian package is being built
 		CODEPREFIX=$(PREFIX)
+		ETCRT = /
 	else
 		# machine dependent prefix for user home installation
 		CODEPREFIX=$(PREFIX)/$(UMA)
 	endif
 endif
+
+DEFINES += -DETC_PREFIX=\"$(ETCRT)\"
+
 
 ifneq (_$(CROSS)_,__)
 ifeq (_$(MACHINE)_,_strongarm_)

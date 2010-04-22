@@ -192,7 +192,7 @@ char open_opts_file(char *argv0, char *fname)
 		return true;
 	   }
 
-	sprintf(fname,PREFIX"/etc/%s.conf",argv0);
+	sprintf(fname,ETC_PREFIX"/etc/%s.conf",argv0);
 	if (fexist(fname) == true)
 	   return true;	
 
