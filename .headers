@@ -1,0 +1,17 @@
+HDRS = \
+	copyright.h	\
+	daemonic.h	\
+	ftape.h	\
+	mkopts.h	\
+	netutils.h	\
+	t_Glimpselog.h \
+	astropak.h \
+	readln.h	\
+	t_Set.h	\
+	t_floating_avg.h	\
+	t_peer.h	\
+	t_ringbuf.h	\
+	t_sorter.h	\
+	t_versioninfo.h	\
+	timer.h	\
+	utils.h		

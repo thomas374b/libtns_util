@@ -1,0 +1,16 @@
+SRCS = \
+	utils.cpp	\
+	daemonic.cpp	\
+	ftape.cpp	\
+	readln.cpp	\
+	t_Set.cpp	\
+	t_floating_avg.cpp	\
+	t_ringbuf.cpp	\
+	t_sorter.cpp	\
+	t_versioninfo.cpp	\
+	t_Glimpselog.cpp \
+	astropak.cpp \
+	timer.cpp	\
+	mkopts.cpp	\
+	netutils.cpp	\
+	t_peer.cpp	

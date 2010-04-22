@@ -1,0 +1,16 @@
+; tnsutil.def : Declares the module parameters for the DLL.
+
+LIBRARY      "tns_util.dll"
+DESCRIPTION  'pantecs timer, network, sort and options gadgets library'
+
+
+EXPORTS
+	empty_func	@1 
+	InitTimer	@2
+	getTime		@3
+	DoneTimer	@4
+	GetTCPPort	@5
+	scan_args	@6
+	DllMain     @7
+
+
