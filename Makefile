@@ -1087,8 +1087,7 @@ else
 #DEBDEPITEMS = $(shell (for i in $(DEBDEPLIBS); do dpkg -S $$i 2>/dev/null; done) | awk '{print $$1}' | sort -u | cut -f1 -d: )	
 #DEBDEPEND = $(shell (for item in $(DEBDEPITEMS); do grep $$item /var/lib/dpkg/info/$$item.shlibs | awk '{for (j=3; j<=NF; j++) printf("%s ",$$j); printf(",\n");}' | sort -u; done) | awk '{printf("%s ",$$0)}' | sed "s/ ,/,/g;s/, $$//g")
 
-## DEBDEPEND = $(shell	dpkg-shlibdeps -O $(O_LIBNAME) | cut -f2,3,4,5,6,7,8,9,10,11,12 -d=)
-
+# DEBDEPEND = $(shell dpkg-shlibdeps -O $(O_LIBNAME) | sed 's/^.*Depends=//g' )
 DEBDEPEND = $(shell mk_shlibs.sh -o $(O_LIBNAME))
 
 install_deb: $(DEBLIB) $(DEBINC) $(DEBCTRL) $(O_LIBNAME)
@@ -1142,6 +1141,7 @@ endif
 	tail -$(DEBDESCTAIL) doc/description) >$(DEBCTRL)/control	
 	@(find $(DEBRT)/ -type d -empty -exec rmdir {} \; 2>/dev/null; echo "" >/dev/null; )
 	chmod -R g-s $(DEBRT)
+	find $(DEBRT)/usr/lib -type f -exec chmod 644 {} \;
 	fakeroot dpkg-deb --build $(DEBRT)
 	lintian $(DEBRT).deb
 	mv $(DEBRT).deb $(O_DEBPKG) && $(MAKE) debclean
