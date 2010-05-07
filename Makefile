@@ -3,12 +3,12 @@
 ## universal Makefile by new_make (pantecs Makefile templater)
 ##
 
-TARGET =  tns_util
-LIBS   =  -lstdc++
-DEFS =  
+TARGET = tns_util
+LIBS   = -lstdc++
+DEFS = 
 
-EXTRA_INC =  -I.  
-EXTRA_LIB =  
+EXTRA_INC = -I.  
+EXTRA_LIB = 
 
 BINDIR = bin
 # where to install, choose one of bin, sbin or libexec
@@ -28,12 +28,13 @@ WARN	= -Wall -Wno-unused
 DEBUG	= -ggdb -DDEBUG
 CODE	= -fpic # -fpcc-struct-return 
 
-MAJOR =  0
-MINOR =  9
+MAJOR = 0
+MINOR = 9
 PATCHLEVEL = 2
 VERSION = $(MAJOR).$(MINOR).$(PATCHLEVEL)
 
 MK_DEBIAN_PKG = 1
+	# set to 1 to create and install debian packages
 
 include .cache-$(shell uname -n)
 include built/.versions
@@ -74,11 +75,11 @@ SBIN_TARGET = $(shell test -f man/man8/$(TARGET).8 && echo "s")
 #################################################################
 
 # enable flags for various toolkits
-WITH_XAW =  
-WITH_MOTIF =  
-WITH_XFORMS =  
+WITH_XAW = 
+WITH_MOTIF = 
+WITH_XFORMS = 
 WITH_MESAGL = 
-WITH_QTOPIA =  
+WITH_QTOPIA = 
 WITH_WXWIDGETS = 
 WITH_X = 
 WITH_XINC = 
@@ -1062,9 +1063,11 @@ ifeq ($(MAKE_T),$(KMOD))
 install_deb: $(DEBMOD) $(O_KMOD)
 	$(INSTALL) -m 755 $(O_KMOD) $(DEBMOD)
 else
+	# not a kernel module
+	
 ifeq ($(MAKE_T),$(BINTARGET))
 	# binary
-DEBDEPEND = $(shell mk_shlibs.sh -o $(O_TARGET))
+DEBDEPLIBS = $(shell ldd $(O_TARGET) | awk '{print $$1}')
 
 install_deb: $(O_TARGET) $(DEBBIN) $(DEBSHARE)
 	$(STRIP) -v --strip-unneeded -R .comment $(O_TARGET) -o $(DEBBIN)/$(TARGET)
@@ -1075,19 +1078,10 @@ install_deb: $(O_TARGET) $(DEBBIN) $(DEBSHARE)
 	fi)
 else
 	# library
-
-#DEBDEPLIBS = $(shell ldd $(O_LIBNAME) | awk '{print $$1}')
-#DEBDEPITEMS = $(shell (for i in $(DEBDEPLIBS); do dpkg -S $$i 2>/dev/null; done) | awk '{print $$1}' | sort -u | cut -f1 -d: )	
-#DEBDEPEND = $(shell (for item in $(DEBDEPITEMS); do grep $$item /var/lib/dpkg/info/$$item.shlibs | awk '{for (j=3; j<=NF; j++) printf("%s ",$$j); printf(",\n");}' | sort -u; done) | awk '{printf("%s ",$$0)}' | sed "s/ ,/,/g;s/, $$//g")
-
-# DEBDEPEND = $(shell dpkg-shlibdeps -O $(O_LIBNAME) | sed 's/^.*Depends=//g' )
-DEBDEPEND = $(shell mk_shlibs.sh -o $(O_LIBNAME))
+DEBDEPLIBS = $(shell ldd $(O_LIBNAME) | awk '{print $$1}')
 
 install_deb: $(DEBLIB) $(DEBINC) $(DEBCTRL) $(O_LIBNAME)
 	$(STRIP) -v --strip-unneeded -R .comment $(O_LIBNAME) -o $(DEBLIB)/$(LIBNAME)
-#	@echo LIBS $(DEBDEPLIBS)
-#	@echo ITEMS $(DEBDEPITEMS)
-#	@echo DEPEND "$(DEBDEPEND)"
 	@echo "lib$(TARGET) $(MAJOR) $(DEBDEPEND)" >$(DEBCTRL)/shlibs
 	@(cd $(DEBLIB); ln -s $(LIBNAME) $(DEVLIBSYM); ln -s $(LIBNAME) $(SONAME); )
 	@(SRCPATH=`pwd` ;\
@@ -1097,7 +1091,15 @@ install_deb: $(DEBLIB) $(DEBINC) $(DEBCTRL) $(O_LIBNAME)
 	    $(INSTALL) -m 644 $$SRCPATH/$$I $$I ;\
 	  done ) 		
 endif
+#	
+## DEBDEPEND = $(shell dpkg-shlibdeps -O $(O_LIBNAME) | cut -f2,3,4,5,6,7,8,9,10,11,12 -d=)
+## DEBDEPEND = $(shell mk_shlibs.sh -o $(O_LIBNAME))
+#
+DEBDEPITEMS = $(shell (for i in $(DEBDEPLIBS); do dpkg -S $$i 2>/dev/null; done) | awk '{print $$1}' | sort -u | cut -f1 -d: )	
+DEBDEPEND = $(shell (for item in $(DEBDEPITEMS); do apt-cache show $$item |grep Version:|awk '{printf("%s (>= %s),\n","'$$item'",$$2)}' | sort -u; done) | awk '{printf("%s ",$$0)}' | sed "s/ ,/,/g;s/, $$//g")
+#
 endif
+
 
 debclean:
 	rm -rf $(DEBRT) contrib/DEBIAN/changelog*
@@ -1122,10 +1124,13 @@ debcopy: $(DEBMAN) $(DEBDOC) htmldoc install_deb debfiles
 	@(cd ./$(DEBRT); md5sum `find * -type f|egrep -v DEBIAN/`) >$(DEBCTRL)/md5sums
 
 ifeq ($(MK_DEBIAN_PKG),1)
-deb: all debcopy
+deb: debclean all debcopy
 else
 deb: clean debclean all debcopy
 endif
+	@echo " LIBS: $(DEBDEPLIBS)"
+	@echo " ITEMS: $(DEBDEPITEMS)"
+	@echo " DEPEND: $(DEBDEPEND)"
 	@(echo "Package: $(DEBPKG)";\
 	echo "Version: $(DEBVERS)";\
 	echo "Depends: $(DEBDEPEND)";\
