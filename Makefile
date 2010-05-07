@@ -33,6 +33,15 @@ MINOR =  9
 PATCHLEVEL = 2
 VERSION = $(MAJOR).$(MINOR).$(PATCHLEVEL)
 
+ifeq (_${MK_DEBPKG}_,__)
+MK_DEBIAN_PKG = 0
+	# set to 1 to create and install debian packages
+else
+MK_DEBIAN_PKG = 1
+	# to create debian packages was selected by environment variable MK_DEBPKG
+endif
+
+
 include .cache-$(shell uname -n)
 include built/.versions
 
@@ -85,6 +94,10 @@ WITH_XINC =
 UID = $(shell id |sed -e 's/[0-9][0-9]*/ & /g'|cut -f2 -d' ')
 
 ifeq (_${PREFIX}_,__)
+ifeq ($(MK_DEBIAN_PKG),1)
+	# debian package is being built, PREFIX must be /usr
+	PREFIX = /usr
+else
 	OPTROOT = /opt
 		# choose one of /Software, /public, /usr/local, /opt or whatever your prefix is 
 ifeq (_$(UID)_,_0_)
@@ -110,6 +123,7 @@ else
 		PREFIX = ${HOME}
 		PKGLOG = ${HOME}/.packages
 		# private users installation goes to your homedir
+endif
 endif
 else
 	PREFIX = ${PREFIX}
@@ -577,11 +591,11 @@ $(TARGET)/Makefile:
 	@if test -f $(TARGET)/Makefile; then echo ok; else ln -s . $(TARGET); fi
 
 clean:
-	@rm -f a.out $(OPA)/*.o core $(OPA)/lib*.so* $(OPA)/lib*.a $(TARGET).pc $(O_MAKE_T) 	
+	@rm -f a.out $(OPA)/*.o core $(OPA)/lib*.so* $(OPA)/lib*.a $(TARGET).pc $(O_MAKE_T) built/.versions	
 
-distclean:
+distclean: debclean
 	if test -L $(TARGET); then rm $(TARGET); fi
-	rm -rf ./built moc_*.cpp uic_*.cpp .*_o core a.out *.bck .cache-* *.bak .*.bak .*.bck Makefile-* .hc~*~ $(DEBRT)
+	rm -rf ./built moc_*.cpp uic_*.cpp .*_o core a.out *.bck .cache-* *.bak .*.bak .*.bck Makefile-* .hc~*~
 	chmod 440 .headers .sources .defines
 
 $(O_KMOD): cflag_info $(OBJS)
@@ -651,17 +665,19 @@ endif
 ifeq (_${LOGNAME}_,_root_)
 ifeq (_$(CROSS)$(DEBUG_FLAGS)_,__)
 	ldconfig
+	@(cd $(INST_PREFIX)/lib$(GDBPREFIX);\
+	ln -sf $(LIBNAME) $(DEVLIBSYM) )
 else
 	@(cd $(INST_PREFIX)/lib$(GDBPREFIX);\
 	rm -f $(DEVLIBSYM) $(SONAME);\
-	ln -s $(INST_PREFIX)/lib$(GDBPREFIX)/$(LIBNAME) $(SONAME);\
-	ln -s $(INST_PREFIX)/lib$(GDBPREFIX)/$(LIBNAME) $(DEVLIBSYM) )
+	ln -s $(LIBNAME) $(SONAME);\
+	ln -s $(LIBNAME) $(DEVLIBSYM) )
 endif	
 else
 	@(cd $(INST_PREFIX)/lib$(GDBPREFIX);\
 	rm -f $(DEVLIBSYM) $(SONAME);\
-	ln -s $(INST_PREFIX)/lib$(GDBPREFIX)/$(LIBNAME) $(SONAME);\
-	ln -s $(INST_PREFIX)/lib$(GDBPREFIX)/$(LIBNAME) $(DEVLIBSYM) )
+	ln -s $(LIBNAME) $(SONAME);\
+	ln -s $(LIBNAME) $(DEVLIBSYM) )
 endif
 endif
 
@@ -765,6 +781,12 @@ install_man: $(PREFIX)/man $(PKGLOG)
 	  awk '{print "$(PREFIX)/" $$0 }' >>$(PKGLOG)/$(TARGET)	;\
 	  fi )
 
+THISPATH = $(shell pwd)
+
+ifeq ($(MK_DEBIAN_PKG),1)
+install: deb
+	su - root -c 'dpkg -i '$(THISPATH)/$(O_DEBPKG)
+else
 ifeq ($(MAKE_T),$(KMOD))
 install: install_bin install_mod
 else
@@ -782,11 +804,15 @@ else
 endif
 endif
 endif
-
+endif
 
 uninstall:
+ifeq ($(MK_DEBIAN_PKG),1)
+	dpkg -r $(DEBPKG)
+else
 	rm -rf `cat $(PKGLOG)/$(TARGET)` 
 	rm -f $(PKGLOG)/$(TARGET)
+endif
 	
 tgz:
 	@($(MAKE) distclean	;\
@@ -953,6 +979,8 @@ else
 endif
 endif
 
+DEBBUILD = $(shell svn list -v |sort -n|tail -1|awk '{print $$1}')
+
 DEBUSR = $(DEBRT)/usr
 DEBETC = $(DEBRT)/etc
 DEBBIN = $(DEBRT)/usr/$(BINDIR_)
@@ -963,7 +991,9 @@ DEBDOC = $(DEBUSR)/share/doc/$(DEBPKG)
 DEBMAN = $(DEBUSR)/share/man
 DEBCTRL = $(DEBRT)/DEBIAN
 DEBMOD = $(DEBRT)/$(KMODDIR)
-DEBVERS = $(VERSION)-1
+DEBVERS = $(VERSION)-$(DEBBUILD)
+
+O_DEBPKG = $(OPA)/$(DEBPKG)_$(DEBVERS)_$(MACHINE).deb
 
 $(DEBRT):
 	mkdir -m 755 -p ./$@
@@ -1078,7 +1108,7 @@ endif
 endif
 
 debclean:
-	rm -rf $(DEBRT)
+	rm -rf $(DEBRT) contrib/DEBIAN/changelog*
 
 DEBDESCHEAD = $(shell head -1 doc/description)
 DEBDESCTAIL = $(shell wc doc/description |awk '{print $$1-1}')
@@ -1099,7 +1129,11 @@ debcopy: $(DEBMAN) $(DEBDOC) htmldoc install_deb debfiles
 	gzip -c9 <contrib/DEBIAN/changelog.Debian >$(DEBDOC)/changelog.Debian.gz
 	@(cd ./$(DEBRT); md5sum `find * -type f|egrep -v DEBIAN/`) >$(DEBCTRL)/md5sums
 
-deb: debclean clean all debcopy
+ifeq ($(MK_DEBIAN_PKG),1)
+deb: all debcopy
+else
+deb: clean debclean all debcopy
+endif
 	@(echo "Package: $(DEBPKG)";\
 	echo "Version: $(DEBVERS)";\
 	echo "Depends: $(DEBDEPEND)";\
@@ -1110,7 +1144,7 @@ deb: debclean clean all debcopy
 	chmod -R g-s $(DEBRT)
 	fakeroot dpkg-deb --build $(DEBRT)
 	lintian $(DEBRT).deb
-	mv $(DEBRT).deb $(OPA)/$(DEBPKG)_$(DEBVERS)_$(MACHINE).deb && $(MAKE) debclean
+	mv $(DEBRT).deb $(O_DEBPKG) && $(MAKE) debclean
 
 
 
