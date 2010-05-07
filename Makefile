@@ -33,14 +33,7 @@ MINOR =  9
 PATCHLEVEL = 2
 VERSION = $(MAJOR).$(MINOR).$(PATCHLEVEL)
 
-ifeq (_${MK_DEBPKG}_,__)
-MK_DEBIAN_PKG = 0
-	# set to 1 to create and install debian packages
-else
 MK_DEBIAN_PKG = 1
-	# to create debian packages was selected by environment variable MK_DEBPKG
-endif
-
 
 include .cache-$(shell uname -n)
 include built/.versions
