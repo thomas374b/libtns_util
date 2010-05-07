@@ -808,7 +808,7 @@ endif
 
 uninstall:
 ifeq ($(MK_DEBIAN_PKG),1)
-	dpkg -r $(DEBPKG)
+	su - root -c 'dpkg -r '$(DEBPKG)
 else
 	rm -rf `cat $(PKGLOG)/$(TARGET)` 
 	rm -f $(PKGLOG)/$(TARGET)

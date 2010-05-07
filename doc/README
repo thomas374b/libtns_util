@@ -1,33 +1,48 @@
 INSTALLATION:
 
 The makefile is universal and mimics features like configure does.
-Just run
+Just type
 
 	make
 	make install
 
-where you unpacked it. All necessary stuff will be figured out
-automatically. Development of this makefile is in constant flow 
+where you unpacked the sources. All necessary stuff will be figured 
+out automatically. Development of this makefile is in constant flow 
 and depends also on the availability of different architectures
 to the author.
 
-The above mentioned installation procedure does not involve any 
-package management.  You can run is as normal user or as root.
-In case of normal user installation prefix is your home directory.
+You can run "make install" as normal user or as root. In case of 
+normal user installation prefix is your home directory. In case of
+root user installation prefix will be /opt/Pantec
 
 CAVEATS:
 
 The makefile uses heavily standard unix tools like 
-make, tar, install, ls, date, grep, sed, awk ...  
+make, tar, install, ls, date, grep, sed, awk, wc, du, uname ...  
 ¡You should have the GNU versions installed of it!
-	
-To build debian packages wou will also need 
-svn, fakeroot, dpkg-deb, lintian
 
-Debian packages can be installed in /usr only. Everything else
-will be a policy violation for debian packages. That's why you 
-have to run	
-	
-	make deb PREFIX=/usr
-	
-in order to build a deb-packet.	
+
+DEBIAN PACKAGES:
+
+If you want to create debian install packages you will need some more
+tools. Install the packages  
+
+	svn (or subversion)
+	fakeroot
+	dpkg-dev
+	lintian 
+
+Additionally you will need a set of my scripts. If you've got everything
+just type
+
+	export MK_DEBPKG=y
+	make distclean
+	make install
+
+You will be prompted for root password for installation once the package 
+has been successfully built.
+
+Debian packages can be installed in prefix /usr only. Everything else
+will be a policy violation for debian packages. 
+
+
