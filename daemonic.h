@@ -73,11 +73,11 @@ typedef void (*sighandler_t)(int);
 									syslog(LOG_INFO|LOG_FACILITY,y);	\
 							}
 
-		#define EPRINTF(xxx)	{										\
+		#define EPRINTF(xx)	{										\
 								if (detached == false)					\
-									fprintf(stderr,xxx);				\
+									fprintf(stderr,xx);				\
 								else 									\
-									syslog(LOG_ERR|LOG_FACILITY,xxx);	\
+									syslog(LOG_ERR|LOG_FACILITY,xx);	\
 								}												
 */
 	#else
