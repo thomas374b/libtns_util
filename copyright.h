@@ -30,6 +30,12 @@
 #define AUTHOR "Thomas Pantzer, <Thomas at/@ Pantzer dot/. net>"
 #endif
 
+#ifndef COMPILER_VERSION
+#ifdef __GNUC__ 
+#define COMPILER_VERSION __VERSION__
+#endif
+#endif
+
 #ifdef MAIN_G
 	/* char version_string[] = "version: \t"VERSION"\n\0";	*/
 	/* char revision_date[] = "last revision: \t"REVISION"\n\0"; */
@@ -37,8 +43,13 @@
 char copyright_info[] =
 	TARGETNAME" v"VERSION", rev. "REVISION",   copyright: "AUTHOR"\n\0";
 
+#ifdef SHOW_COMPILER_MOD
 char compiler_info[] =
 	"host: "COMPILER_HOST", compiler: "COMPILER_EXE", version: "COMPILER_VERSION"\n\0";
+#else
+char compiler_info[] =
+	"version: "COMPILER_VERSION"\n\0";
+#endif
 
 #else
 #ifdef SHOW_COMPILER_MOD
