@@ -177,33 +177,38 @@ void t_Range::Reset(void)
 	min = -max;
 	size = 1.0;
 	changed = 0;
+	freezeBoundaries = false;
 }
 
 bool t_Range::Update(double d)
 {
 //	fprintf(stderr,"t_Range::Update()\n");
-
+    
 	changed = 0;
 	last = d;
 	
 	if (d > max) {
-	    max = d;
-	    changed = 1; 
+		max = d;
+		changed = 1; 
 	}
 	if (d < min) {
-	    min = d;
-	    changed = -1; 
+		min = d;
+		changed = -1; 
 	}
-
-#ifdef DEBUG_ALL
-	if (changed != 0)
-	   fprintf(stderr,"t_Range::Update(%g) %g<x<%g\t",d,min,max); 
-#endif
+	size = max - min; 
+	if (size == 0.0) {
+		size = 1.0;
+	}	
 	
-	size = max - min;
-	if (size == 0.0)
-	   size = 1.0; 
-
+	if (changed != 0) {
+		if (!freezeBoundaries) {
+			bias = - ((max + min) / 2.0);
+			fullScale = size / 2.0;
+		}	    
+#ifdef DEBUG_ALL
+		fprintf(stderr,"t_Range::Update(%g) %g<x<%g\t",d,min,max); 
+#endif
+	}
 	return (changed != 0);
 }
 
@@ -216,6 +221,7 @@ bool t_Range::HasChanged(void)
 	return false;
 }
 
+// return value between {0..1}
 double t_Range::scaled(void)
 {
 	if (size != 0.0) {
@@ -223,6 +229,27 @@ double t_Range::scaled(void)
 	}		
 	return 1.0;
 }
+
+// return value between {-1..1}
+double t_Range::Scaled11(double x)
+{
+	if (size != 0.0) {			
+		return (x + bias) / fullScale;
+	}		
+	return 1.0;
+}
+
+void t_Range::setBias(double b)
+{
+	bias = b;
+	freezeBoundaries = true;
+}
+
+void t_Range::setFullScale(double fs)
+{
+	fullScale = fs;
+}
+
 
 short t_Range::scaled2(void)
 {
@@ -270,7 +297,8 @@ bool t_NamedRange::Scanf(char *st)
 //_______________________________________________
 void t_laverage::Add(double v)
 {
-	AvgV += ((v - AvgV) / alen);
+	gradient = ((v - AvgV) / alen);
+	AvgV += gradient;
 }
 
 double t_laverage::Range(void)
@@ -335,14 +363,38 @@ void t_NamedSensorAverage::Add(double v, bool bWarmup)
 void t_average::Add(double v)
 {
 	t_laverage::Add(v);
-	Update(v);
+	if (calibration) {
+	    Update(AvgV);
+	} else {
+	    Update(v);
+	}    
+}
+
+void t_average::setCalibrationLen(double l)
+{
+	alen = l;
+	calibration = true;
+	Reset();
+}
+
+void t_average::finishCalibration(void) 
+{
+	alen = windowLength;
+	calibration = false;
+	freezeBoundaries = true;	
 }
 
 void t_average::Init(double l)
 {
 	alen = l;
+	windowLength = alen;
 //	AvgV = 0.0;
 	t_laverage::Reset();
+}
+
+double t_average::Filtered(double fs)
+{
+    return t_Range::Scaled11(AvgV) * fs;
 }
 
 

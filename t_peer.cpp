@@ -30,7 +30,7 @@
 #include "tns_util/copyright.h"
 
 
-char *internal_errmsg[5] = {
+const char *internal_errmsg[5] = {
 	"error_from_overloaded_func",      
 	"broadcast_sent_false_func",       
 	"process_output_false_func",      

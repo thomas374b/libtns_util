@@ -25,6 +25,8 @@ typedef struct {
 	int hour, minute, second;
 } t_timestruct;
 
+#include <time.h>
+
 extern double sunRise(double height, time_t now);
 extern double sunSet(double height, time_t now);
 extern bool atDayTime(double height, time_t now);

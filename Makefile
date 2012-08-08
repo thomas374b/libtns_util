@@ -30,7 +30,7 @@ CODE	= -fpic # -fpcc-struct-return
 
 MAJOR = 0
 MINOR = 9
-PATCHLEVEL = 3
+PATCHLEVEL = 6
 VERSION = $(MAJOR).$(MINOR).$(PATCHLEVEL)
 
 ifeq (_${MK_DEBPKG}_,__)
@@ -53,6 +53,7 @@ else
 UMA = $(UNAME)-$(MACHINE)
 
 ifeq (_$(MACHINE)_,_strongarm_)
+	# Neo
 	# zaurus (all models, kernel), use original Sharp compiler
 	CROSS = arm-linux-
 else
@@ -103,7 +104,11 @@ else
 ifeq (_$(UID)_,_0_)
 		PREFIX = $(OPTROOT)$(SUBPREFIX)
 ifeq (_$(MACHINE)_,_strongarm_)
+ifeq (_$(DEVICE)_,_Neo_)
+			PREFIX=/opt/qtmoko
+else
 			PREFIX=/mnt/SD/armv4l
+endif
 else
 ifeq (_$(MACHINE)_,_armv5te_)
 				PREFIX=/mnt/SD/armv5te
@@ -151,7 +156,11 @@ DEFINES += -DETC_PREFIX=\"$(ETCRT)\"
 
 ifneq (_$(CROSS)_,__)
 ifeq (_$(MACHINE)_,_strongarm_)
+ifeq (_$(DEVICE)_,_Neo_)
+		CODEPREFIX=/opt/qtmoko
+else
 		CODEPREFIX=/mnt/SD/armv4l
+endif
 else
 ifeq (_$(MACHINE)_,_armv5te_)
 			CODEPREFIX=/mnt/SD/armv5te
@@ -279,14 +288,14 @@ DEFS += -DCOMPILER_VERSION=\"$(CC_VERSION)\"
 
 TARGETPREFIX=$(CODEPREFIX)
 
-ifeq (_$(UID)_,_0_)
+#ifeq (_$(UID)_,_0_)
 ifneq (_$(CROSS)_,__)
 ifeq (_$(MACHINE)_,_etrax100lx_)
 			TARGETPREFIX = /mnt/flash
 endif
 		SHARES_PATH = $(TARGETPREFIX)/share/$(TARGET)
 endif
-endif	
+#endif	
 
 DEFS += -DPREFIX=\"$(TARGETPREFIX)\" 
 DEFS += -DSHARES_PATH=\"$(SHARES_PATH)\"
@@ -1180,7 +1189,9 @@ endif
 	tail -$(DEBDESCTAIL) doc/description) >$(DEBCTRL)/control	
 	@(find $(DEBRT)/ -type d -empty -exec rmdir {} \; 2>/dev/null; echo "" >/dev/null; )
 	chmod -R g-s $(DEBRT)
+ifeq ($(MAKE_T),$(LIBNAME))
 	find $(DEBRT)/usr/lib -type f -exec chmod 644 {} \;
+endif
 	fakeroot dpkg-deb --build $(DEBRT)
 	lintian $(DEBRT).deb
 	mv $(DEBRT).deb $(O_DEBPKG) && $(MAKE) debclean

@@ -42,8 +42,8 @@ typedef struct {
 		t_kind kind;
 
 		char flag;
-		char *longflag;
-		char *helptext;
+		const char *longflag;
+		const char *helptext;
 
 		char b;
 		int i;

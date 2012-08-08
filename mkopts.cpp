@@ -360,7 +360,7 @@ void save_opts_file(char *argv0, t_opts opts[])
 }
 
 
-int scan_integer(int *result, int argc, char *argv[], int i, char flag, char *longflag)
+int scan_integer(int *result, int argc, char *argv[], int i, char flag, const char *longflag)
 {
 	if (result == NULL) {
 		return 0;

@@ -33,11 +33,12 @@ private:
 	char ItsName[64];
 public:
 	t_NamedObj(); 
+	virtual ~t_NamedObj() {
+	};
 	
 	void SetSubPointer(t_NamedObj **);
-	
 	char *getName(void) { return ItsName; };
-	void SetName(char *n); 
+	void SetName(char *n);
 	
 	virtual bool Save(int fd);
 	virtual bool Load(int fd);
@@ -56,10 +57,16 @@ class t_Range {
 private:
 	int changed;
 	double last;
-public:
+protected:
+	double fullScale;
+	bool freezeBoundaries;	
+public:	
+	double bias;
 	t_Range() {
 		changed = 0;
 		last = 1.0;
+		bias = 0.0;
+		freezeBoundaries = false;
 	};
 	double max,min,size;
 	void Reset(void);
@@ -69,6 +76,9 @@ public:
 	short scaled2(void);
 	int Changed(void) { return changed; };
 	double Last(void) { return last; };
+	double Scaled11(double x);
+	void setBias(double);
+	void setFullScale(double);
 };
 
 
@@ -76,6 +86,8 @@ public:
 //
 class t_NamedRange : public t_Range, public t_NamedObj {
 public:	
+	virtual ~t_NamedRange() {
+	};
 	virtual const char *getClassName(void) { return "t_NamedRange"; };
 	virtual char *Printf(char *buf);
 	virtual bool Scanf(char *buf);	
@@ -87,13 +99,17 @@ public:
 class t_laverage : public t_Range {
 public:
 	double AvgV,alen;
+	double gradient; // holds the first derivate;
 
 	t_laverage() {
 		AvgV = 1.0;
 		alen = 1.0;
+		gradient = 0.0;
 	};
-	double Range(void);
+	virtual ~t_laverage() {
+	};
 
+	double Range(void);
 	virtual void Add(double);	
 	virtual void Reset(void);
 };
@@ -102,15 +118,26 @@ public:
 //_________________________________________________________
 //
 class t_average : public t_laverage {
-public:
+private:
+	double windowLength;
+	bool calibration;
+public:	
+	t_average() {
+	    calibration = false;
+	    windowLength = 1.0;
+	};
 	void Init(double);
 	void Init(t_laverage *p) {
 		if (p != NULL) {
 			AvgV = p->AvgV;
 			alen = p->alen;
+			windowLength = alen;
 		}
 	};
 	virtual void Add(double v);	
+	double Filtered(double fullScale);
+	void setCalibrationLen(double windowLength);
+	void finishCalibration(void);
 };
 
 
@@ -135,6 +162,9 @@ public:
 //
 class t_window_stack : public t_average {
 public:
+	virtual ~t_window_stack() {
+	};
+
 	int len,idx,cnt;
 	double *V;
 
