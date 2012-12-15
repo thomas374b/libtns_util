@@ -390,7 +390,7 @@ void t_SunPosition::Calculate(double TDT, double geolat, double lmst)
 	lat = 0.0;
 	anomalyMean = MSun;
 
-	distance = (1.0-sqr(e))/(1.0+e*cos(nu)); // distance in astronomical units
+	distance = (1.0-SQR(e))/(1.0+e*cos(nu)); // distance in astronomical units
 	diameter = diameter0/distance; // angular diameter in radians
 	distance *= a;  					   // distance in km
 	parallax = 6378.137/distance;  // horizonal parallax

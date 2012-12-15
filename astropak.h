@@ -25,7 +25,8 @@ typedef struct {
 	int hour, minute, second;
 } t_timestruct;
 
-#include <time.h>
+
+#include <sys/time.h>
 
 extern double sunRise(double height, time_t now);
 extern double sunSet(double height, time_t now);
@@ -43,7 +44,7 @@ extern int _tnsutil_daylightSaving;
 
 #define deg2rad(x)	((x*M_PI)/180.0)
 #define rad2deg(x)	((x*180.0)/M_PI)
-#define sqr(x)		((x)*(x))
+#define SQR(x)		fabs(fabs(x) * fabs(x))
 #define frac(x)		((x)-floor(x))
 
 class t_coor {

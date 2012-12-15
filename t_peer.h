@@ -48,6 +48,7 @@
 class t_reserved_dummy {
 public:
 	virtual void Done(void) { return; };
+	virtual ~t_reserved_dummy() {};
 };
 
 
@@ -89,6 +90,9 @@ public:
 class t_Peers {
 public:
 	fd_set Read_FD_Set;
+
+
+	virtual ~t_Peers() {};
 
 	void Init(int max, int ss_fd);
 	void Process(void);
