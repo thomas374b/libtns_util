@@ -54,6 +54,10 @@ void open_errlog(const char *target)
 		snprintf(st,768,".%s-errors",target);
 	}
 	elogf = fopen(st,"a");
+
+	// redirect old stdout and stderr to our new log file
+	stderr = elogf;
+	stdout = elogf;
 #endif	
 }
 
