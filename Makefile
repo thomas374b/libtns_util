@@ -590,7 +590,7 @@ endif
 
 $(OPA)/%.o: 
 	@echo [CC] $< \-\> $@
-	@$(CC) $(CFLAGS) -DMODNAME=\"$*\" -DREVISION=\"$($<.version)\" $(INCLDIR) -c $< -o $@
+	$(CC) $(CFLAGS) -DMODNAME=\"$*\" -DREVISION=\"$($<.version)\" $(INCLDIR) -c $< -o $@
 
 .$(UMA)_o: 
 	@(echo "making target directory $(UMA)" ;\
@@ -955,7 +955,8 @@ built/.versions: $(DEPEND)
 	(echo creating new ls_fulltime version list >&2 ; \
 	    for i in $(SRCS)		; \
 	    do echo "$$i" >&2                  	; \
-		echo "$${i}.version=$${i}@@unknown,`ls --full-time $$i | awk '{print $$6"T"$$7"Z"}' | sed 's/-//g'`"; \
+			echo "$${i}.version=$${i}@@unknown,`ls --full-time $$i | awk '{print $$6"T"$$7"Z"}' | sed 's/-//g'`"; \
+			if test -L $$i ; then svn ls -v `/bin/ls -l $$i | awk '{print $$NF}'` | awk '{printf("%s.version=%s@@%d,%s,%s%sT%s\n",$$7,$$7,$$1,$$2,$$4,$$5,$$6)}'; fi ; \
 	    done; \
 		echo "# end-of-versions created from ls --full-time"; \
 		if test -f .svn/entries; \
