@@ -74,36 +74,45 @@ void close_errlog(void)
 }
 
 
-
-void mk_log_entry2(char *filename, time_t now, bool plainFormat, char *msg)
+char *mk_logString(time_t now, bool humanReadableTime, char *msg, char *buffer)
 {
-	char ts[1024];
-	char s2[2048 + 128];  
-	
-	int fd = open(filename,O_WRONLY|O_APPEND);
+	char ts[256];
 
+	if (humanReadableTime) {
+		TimeString(now, ts);
+	} else {
+		sprintf(ts,"%ld",now);
+	}
+    snprintf(buffer, 16384, "%s\t%s\n", ts, msg);
+
+	return buffer;
+}
+
+// just pump(append) some bytes to a file
+int writeOrAppend(char *filename, char *buffer)
+{
+	int fd = open(filename,O_WRONLY|O_APPEND);
 	if (fd < 0) {
 		switch (errno) {
 			case ENOENT:
 				fd = open(filename,O_WRONLY|O_CREAT,0644);
 				if (fd != -1) {
 					break;
-				}		
+				}
 			default:
 				EPRINTF("open %s: %s\n",filename,strerror(errno));
-				return;      
-		}				
+				return -1;
+		}
 	}
-	if (plainFormat) {
-		TimeString(now, ts);
-	} else {
-		sprintf(ts,"%ld",now);
-	}
-		
-    snprintf(s2,2048,"%s\t%s\n", ts, msg);
-
-	write(fd,s2,strlen(s2));	    	
+	write(fd,buffer,strlen(buffer));
 	close(fd);
+	return 0;
+}
+
+void mk_log_entry2(char *filename, time_t now, bool plainFormat, char *msg)
+{
+	char s2[2048 + 128];
+	writeOrAppend(filename, mk_logString(now, plainFormat, msg, s2));
 }
 
 

@@ -31,7 +31,7 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include <signal.h>
-//#include <time.h>
+#include <time.h>
 
 #ifdef AIX
 	extern "C" {

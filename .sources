@@ -13,4 +13,5 @@ SRCS = \
 	timer.cpp	\
 	mkopts.cpp	\
 	netutils.cpp	\
+	t_LogBuffer.cpp \
 	t_peer.cpp	

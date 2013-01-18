@@ -43,6 +43,8 @@ extern void do_logging(const char *target, char *msg);
 extern void mk_log_entry(char *filename, time_t now, char *msg);
 extern void mk_log_entry2(char *filename, time_t now, bool plainFormat, char *msg);
 extern void mk_log_entry_now(char *filename, char *msg);
+extern char *mk_logString(time_t now, bool plainFormat, char *msg, char *buffer);
+extern int writeOrAppend(char *filename, char *buffer);
 
 typedef void (*sighandler_t)(int);
 

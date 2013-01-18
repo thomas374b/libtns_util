@@ -13,5 +13,6 @@ HDRS = \
 	t_ringbuf.h	\
 	t_sorter.h	\
 	t_versioninfo.h	\
+	t_LogBuffer.h	\
 	timer.h	\
 	utils.h		
