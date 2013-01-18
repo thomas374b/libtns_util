@@ -67,11 +67,20 @@ bool t_LogBuffer::addEntry(char *fname, char *buf) {
 	} else {
 		if (strcmp(filename, fname) == 0) {
 			// same file
-			strcat(buffer, buf);
-			count++;
 
-			if (count >= stepping) {
-				return flush();
+			int free = bufSize - strlen(buffer);
+			if (free > strlen(buf)) {
+				// free space
+				strcat(buffer, buf);
+				count++;
+
+				if (count >= stepping) {
+					return flush();
+				}
+			} else {
+				EPRINTF("bufsize for burst write exhausted after %d entries",count);
+				bool ret = flush();
+				initEntry(fname, buf);
 			}
 		} else {
 			// different file
