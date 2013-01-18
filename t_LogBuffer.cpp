@@ -68,7 +68,7 @@ bool t_LogBuffer::addEntry(char *fname, char *buf) {
 		if (strcmp(filename, fname) == 0) {
 			// same file
 
-			int free = bufSize - strlen(buffer);
+			unsigned int free = bufSize - strlen(buffer);
 			if (free > strlen(buf)) {
 				// free space
 				strcat(buffer, buf);
