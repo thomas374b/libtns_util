@@ -38,7 +38,7 @@ public:
 	
 	void SetSubPointer(t_NamedObj **);
 	char *getName(void) { return ItsName; };
-	void SetName(char *n);
+	void SetName(const char *n);
 	
 	virtual bool Save(int fd);
 	virtual bool Load(int fd);

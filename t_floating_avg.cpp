@@ -45,7 +45,7 @@ void t_NamedObj::SetSubPointer(t_NamedObj **x)
 }
 
 
-void t_NamedObj::SetName(char *name)
+void t_NamedObj::SetName(const char *name)
 {
 	if (name == NULL) {
 		return;
