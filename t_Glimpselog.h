@@ -38,6 +38,7 @@ public:
 	void Write(char * msg);
 	void Advance(char * msg);
 	void Advance(void);
+	int getFD(void) {return fd;};
 };
 
 
