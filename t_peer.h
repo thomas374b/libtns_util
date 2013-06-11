@@ -49,6 +49,10 @@ class t_reserved_dummy {
 public:
 	virtual void Done(void) { return; };
 	virtual ~t_reserved_dummy() {};
+
+	virtual bool blockedBroadcast(/*t_peer*/void *N) {
+		return false;
+	};
 };
 
 
@@ -126,6 +130,7 @@ public:
 protected:
 	int FD_MaxNum,count;
 	t_peer *first;
+	t_peer *insertedLast;
 
 	t_peer *Insert(int new_fd,sockaddr_in *CA);
 

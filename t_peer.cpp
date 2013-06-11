@@ -211,27 +211,27 @@ void t_peer::Done(void)
 // 	   } 
 
 	if (reserved != NULL) {
-	    reserved->Done();	   
-            delete reserved;	
-	    reserved = NULL;
-	   } 
+		reserved->Done();
+		delete reserved;
+		reserved = NULL;
+	}
 
 	if (buffer != NULL) {
-            delete buffer;	
-	    buffer = NULL;
-	   } 
+		delete buffer;
+		buffer = NULL;
+	}
 }
 
 
-t_peer *t_Peers::Insert(int new_fd,sockaddr_in *CA)
+t_peer *t_Peers::Insert(int new_fd, sockaddr_in *CA)
 {
-        if (first == NULL) {
- 	    first = new t_peer;
-	    first->Init(new_fd,CA,count);
-	    return first; 	 
-	   }
-	 else
-	   return first->Insert(new_fd,CA,count);    
+	if (first == NULL) {
+		first = new t_peer;
+		first->Init(new_fd, CA, count);
+		return first;
+	} else {
+	   return first->Insert(new_fd, CA, count);
+	}
 }
 
 
@@ -246,6 +246,7 @@ void t_Peers::Init(int m, int ss_fd)
 	}
 	count = 0;
 	first = NULL;
+	insertedLast = NULL;
 }
 
 
@@ -361,7 +362,7 @@ bool t_Peers::Accept(void)
 		ShutDown(new_fd);
 		return false;
 	} 
-	Insert(new_fd,&ClientAddr);    
+	insertedLast = Insert(new_fd, &ClientAddr);
  
 //        fd_max = max(fd_max,new_fd);
 	count++;
@@ -406,32 +407,41 @@ void t_Peers::Broadcast(char *st, unsigned int l, t_peer *N)
 	t_peer *peer = first;
 
 	while (peer != NULL) {
-	   if (N == peer) {			// if not NULL don't sent to this peer
-	       peer = peer->next;
-	       continue;
-	      }
+		if (N == peer) {			// if not NULL don't sent to this peer
+			peer = peer->next;
+			continue;
+		}
 	      	
-           if (peer->connected == true) {
+		if (peer->connected == true) {
 #ifdef DEBUG_SOCKETS	      
- 	       fprintf(stderr,"t_Peers::Broadcasts(0x%lx)\n",(long)peer);
+			fprintf(stderr,"t_Peers::Broadcasts(0x%lx)\n",(long)peer);
 #endif	       
-	       int L = l;
-	       int w = Write(peer,st,L);
-	       while (w < (int)l)	{
-		  L -= w;
-		  int k = Write(peer,&st[w],L);
-		  if (k > 0)
-		     w += k;
-		   else
-		     break;	 		 
-		 }
+			if (peer->reserved != NULL) {
+				if (peer->reserved->blockedBroadcast(N)) {
+					// this peer was elected _not_ to receive broadcasts from N
+					peer = peer->next;
+					continue;
+				}
+			}
 
-	       if (peer->sent == false)
-		  peer->intError(time(0),broadcast_sent_false_func);  
-	      }
-	      
-	   peer = peer->next;   
-	  }   
+			int L = l;
+			int w = Write(peer,st,L);
+			while (w < (int)l)	{
+				L -= w;
+				int k = Write(peer,&st[w],L);
+				if (k > 0) {
+					w += k;
+				} else {
+					break;
+				}
+			}
+
+			if (peer->sent == false) {
+				peer->intError(time(0),broadcast_sent_false_func);
+			}
+		}
+		peer = peer->next;
+	}
 }
 
 void t_Peers::Broadcast2All(char *st, unsigned int l)
