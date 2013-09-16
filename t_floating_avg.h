@@ -98,13 +98,13 @@ public:
 //
 class t_laverage : public t_Range {
 public:
-	double AvgV,alen;
-	double gradient; // holds the first derivate;
+	double AvgV,alen,gradient,delta;
 
 	t_laverage() {
 		AvgV = 1.0;
 		alen = 1.0;
 		gradient = 0.0;
+		delta = 0.0;
 	};
 	virtual ~t_laverage() {
 	};
@@ -121,10 +121,17 @@ class t_average : public t_laverage {
 private:
 	double windowLength;
 	bool calibration;
-public:	
+	int updateCnt;
+	double windowSum;
+public:
+	t_laverage qErr;
+
 	t_average() {
 	    calibration = false;
 	    windowLength = 1.0;
+	    updateCnt = 0;
+	    windowSum = 0.0;
+		qErr.alen = 32.0;
 	};
 	void Init(double);
 	void Init(t_laverage *p) {
@@ -132,6 +139,7 @@ public:
 			AvgV = p->AvgV;
 			alen = p->alen;
 			windowLength = alen;
+			qErr.alen = alen;
 		}
 	};
 	virtual void Add(double v);	

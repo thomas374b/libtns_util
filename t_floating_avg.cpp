@@ -297,7 +297,8 @@ bool t_NamedRange::Scanf(char *st)
 //_______________________________________________
 void t_laverage::Add(double v)
 {
-	gradient = ((v - AvgV) / alen);
+	delta = (v - AvgV);
+	gradient = (delta / alen);
 	AvgV += gradient;
 }
 
@@ -362,12 +363,32 @@ void t_NamedSensorAverage::Add(double v, bool bWarmup)
 //_______________________________________________
 void t_average::Add(double v)
 {
-	t_laverage::Add(v);
-	if (calibration) {
-	    Update(AvgV);
+	delta = (v - AvgV);
+	gradient = (delta / alen);
+
+	double qd = delta*delta;			// quadratic error
+
+	if (updateCnt < windowLength) {
+		windowSum += v;
+		AvgV = windowSum / (updateCnt+1);	// correct value for the very first steps
+
+		qErr.alen = (updateCnt+1.0);
+		qErr.Add(qd);
 	} else {
-	    Update(v);
+		qErr.Add(qd);
+		qErr.Update(qErr.AvgV);
+
+		AvgV += gradient;
+	}
+
+
+	if (calibration) {
+	    Update(AvgV);	// expand ranges slowly
+	} else {
+	    Update(v);		// quickly expand ranges
 	}    
+
+	updateCnt++;
 }
 
 void t_average::setCalibrationLen(double l)
@@ -375,6 +396,9 @@ void t_average::setCalibrationLen(double l)
 	alen = l;
 	calibration = true;
 	Reset();
+
+	qErr.Reset();
+	qErr.alen = l;
 }
 
 void t_average::finishCalibration(void) 
@@ -388,6 +412,12 @@ void t_average::Init(double l)
 {
 	alen = l;
 	windowLength = alen;
+	windowSum = 0.0;
+	updateCnt = 0;
+
+	qErr.alen = alen;
+	qErr.Reset();
+
 //	AvgV = 0.0;
 	t_laverage::Reset();
 }

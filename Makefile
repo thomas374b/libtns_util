@@ -30,7 +30,7 @@ CODE	= -fpic # -fpcc-struct-return
 
 MAJOR = 0
 MINOR = 9
-PATCHLEVEL = 19
+PATCHLEVEL = 20
 VERSION = $(MAJOR).$(MINOR).$(PATCHLEVEL)
 
 ifeq (_${MK_DEBPKG}_,__)

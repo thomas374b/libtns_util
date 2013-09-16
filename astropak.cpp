@@ -24,6 +24,7 @@
 #include <stdio.h>
 
 #include "tns_util/astropak.h"
+#include "tns_util/daemonic.h"
 
 // #define SHOW_COMPILER_MOD 
 #include "tns_util/copyright.h"
@@ -171,6 +172,11 @@ bool atDayTime(double height, time_t now)
 		double2ts(sunSet(height, now),&_tnsutil_SS);
 		_tnsutil_dayCount = thisDay;
 	}
+
+	EPRINTF("astropak.cpp: sr: %02d:%02d:%02d now: %02d:%02d:%02d ss: %02d:%02d:%02d", 
+			sr->hour, sr->minute, sr->second,
+			TM->tm_hour, TM->tm_min, TM->tm_sec,
+			ss->hour, ss->minute, ss->second);
 	
 	if ((TM->tm_hour > sr->hour) && (TM->tm_hour < ss->hour)) {
 		return true;
@@ -180,32 +186,32 @@ bool atDayTime(double height, time_t now)
 	}
 	if (TM->tm_hour == sr->hour) {
 		if (TM->tm_min > sr->minute) {
-			true;
+			return true;
 		}
 		if (TM->tm_min < sr->minute) {
-			false;
+			return false;
 		}
 		// test für sekunden
 		if (TM->tm_sec > sr->second) {
-			true;
+			return true;
 		}
 		if (TM->tm_sec <= sr->second) {
-			false;
+			return false;
 		}
 	}
 	if (TM->tm_hour == ss->hour) {
 		if (TM->tm_min > ss->minute) {
-			false;
+			return false;
 		}
 		if (TM->tm_min < ss->minute) {
-			true;
+			return true;
 		}
 		// test für sekunden
 		if (TM->tm_sec > sr->second) {
-			false;
+			return false;
 		}
 		if (TM->tm_sec <= sr->second) {
-			true;
+			return true;
 		}
 	}
 	return false;

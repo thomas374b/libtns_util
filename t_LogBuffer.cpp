@@ -78,7 +78,7 @@ bool t_LogBuffer::addEntry(char *fname, char *buf) {
 					return flush();
 				}
 			} else {
-				EPRINTF("bufsize for burst write exhausted after %d entries",count);
+				EPRINTF("bufsize for burst write exhausted after %d entries", count);
 				bool ret = flush();
 				initEntry(fname, buf);
 			}
