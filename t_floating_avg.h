@@ -22,6 +22,9 @@
 #ifndef T_FLOATING_AVG_H
 #define T_FLOATING_AVG_H
 
+
+
+//#include "tns_util/porting.h"
 #include "tns_util/daemonic.h"
 
 
@@ -40,8 +43,8 @@ public:
 	char *getName(void) { return ItsName; };
 	void SetName(const char *n);
 	
-	virtual bool Save(int fd);
-	virtual bool Load(int fd);
+	virtual bool Save(fileHandle fd);
+	virtual bool Load(fileHandle fd);
 	
 	virtual char *Printf(char *buf) { return buf; };
 	virtual bool Scanf(char *buf);

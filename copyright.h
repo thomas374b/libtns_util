@@ -36,6 +36,18 @@
 #endif
 #endif
 
+#ifndef VERSION
+#define VERSION "0.0.0"
+#endif
+
+#ifndef BUILDDATE
+#define BUILDDATE "1970/01/01 0:00:00"
+#endif
+
+#ifndef REVISION
+#define REVISION	"@@unknown"
+#endif
+
 #ifdef MAIN_G
 	/* char version_string[] = "version: \t"VERSION"\n\0";	*/
 	/* char revision_date[] = "last revision: \t"REVISION"\n\0"; */

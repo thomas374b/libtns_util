@@ -21,12 +21,14 @@
 
 
 
-
 #include "tns_util/ftape.h"
 #include "tns_util/utils.h"
 
-//#define SHOW_COMPILER_MOD 
+#ifndef MODNAME
+#define MODNAME __FILE__
+#endif
 #include "tns_util/copyright.h"
+
 
 
 void t_filetape::Init(int s, char *b, char *t, char *e)
@@ -57,7 +59,7 @@ void t_filetape::AddExt(char *e)
 }
 
 
-char *t_filetape::_check(char *buf, char cond, int inc, int p)
+char *t_filetape::_check(char *buf, bool cond, int inc, int p)
 {
 	char *s = buf;
 	int i = p;

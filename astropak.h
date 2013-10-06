@@ -26,13 +26,19 @@ typedef struct {
 } t_timestruct;
 
 
-#include <sys/time.h>
+#include "tns_util/win32_export.h"
 
-extern double sunRise(double height, time_t now);
-extern double sunSet(double height, time_t now);
-extern bool atDayTime(double height, time_t now);
-extern t_timestruct *getSunRise(void);
-extern t_timestruct *getSunSet(void);
+#if _WINDOWS | WIN32
+#else
+	#include <sys/time.h>
+#endif
+
+TNS_UTIL_API double sunRise(double height, time_t now);
+TNS_UTIL_API double sunSet(double height, time_t now);
+TNS_UTIL_API bool atDayTime(double height, time_t now);
+TNS_UTIL_API t_timestruct *getSunRise(void);
+TNS_UTIL_API t_timestruct *getSunSet(void);
+
 extern int _tnsutil_daylightSaving;
 
 #define sunStartStop			0.0
@@ -47,7 +53,7 @@ extern int _tnsutil_daylightSaving;
 #define SQR(x)		fabs(fabs(x) * fabs(x))
 #define frac(x)		((x)-floor(x))
 
-class t_coor {
+TNS_UTIL_API_CLASS t_coor {
 public:
 	double ra;
 	double dec;
@@ -58,7 +64,7 @@ public:
 	double alt;
 };
 
-class t_SunPosition : public t_coor {
+TNS_UTIL_API_CLASS t_SunPosition : public t_coor {
 private:
 	double	anomalyMean;
 	double	distance;
@@ -85,10 +91,6 @@ public:
 
 extern double geographische_Laenge;
 extern double geographische_Breite;
-
-
-
-
 
 
 #endif

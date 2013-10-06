@@ -19,35 +19,40 @@
  */
 
 
-#include <unistd.h>
+
 #include <fcntl.h>
 #include <errno.h>
 
+#include "tns_util/porting.h"
 #include "tns_util/t_Glimpselog.h"
 #include "tns_util/daemonic.h"
-
-//#define SHOW_COMPILER_MOD 
+#ifndef MODNAME
+#define MODNAME __FILE__
+#endif
 #include "tns_util/copyright.h"
 
+#ifndef MAXSTRLEN
+#define MAXSTRLEN	4096
+#endif
 
 void t_GlimpseLog::Open(char *target)
 {
 	snprintf(logfile,768,"%s",target);
-	fd = open(logfile,O_RDWR);
+	fd = openFd(logfile, O_RDWR);
 	if (fd < 0) {
 		switch (errno) {
 			case ENOENT:
-				fd = open(logfile,O_WRONLY|O_CREAT,0644);
-				if (fd != -1) {
+				fd = openFileMode(logfile, O_WRONLY|O_CREAT, 0644);
+				if (fd != INVALID_HANDLE_VALUE) {
 					break;
 				}		
 			default:
-				EPRINTF("open %s: %s\n",logfile,strerror(errno));
+				EPRINTF1("open %s: %s\n", logfile, strerror(errno));
 				return;      
 		}				
 	}
 	if (offset == -1) {
-		offset = lseek(fd,0,SEEK_END);
+		offset = lseekFd(fd, 0, SEEK_END);
 		if (offset == -1) {
 			EPRINTF("lseek to end: %s\n",strerror(errno));
 			offset = 0;
@@ -58,18 +63,18 @@ void t_GlimpseLog::Open(char *target)
 void t_GlimpseLog::Write(char *msg)
 {
 	if (offset == -1) {
-		EPRINTF("call t_GlimpseLog::Open(...) first\n");
+		EPRINTF0("call t_GlimpseLog::Open(...) first\n");
 		return;
 	}
-	fd = open(logfile,O_RDWR);
+	fd = openFd(logfile, O_RDWR);
 	
-	if (fd == -1) {
-		EPRINTF("open file %s: %s\n",logfile,strerror(errno));
+	if (fd == INVALID_HANDLE_VALUE) {
+		EPRINTF1("open file %s: %s\n",logfile,strerror(errno));
 		return;
 	}
-	int l = lseek(fd,offset,SEEK_SET);
+	int l = lseekFd(fd, offset, SEEK_SET);
 	if (l == -1) {
-		EPRINTF("lseek to %d: %s\n",offset,strerror(errno));
+		EPRINTF1("lseek to %d: %s\n",offset,strerror(errno));
 	}
 	
 	char st[MAXSTRLEN];		// pad last bytes with white space
@@ -86,11 +91,11 @@ void t_GlimpseLog::Write(char *msg)
 	}		
 	int l2 = strlen(st);
 	strcpy(lastlogstring, st);
-	int w = write(fd,st,l2);
+	int w = writeFd(fd,st,l2);
 	if (w != l2) {
-		EPRINTF("error:%d, only %d of %d bytes written: %s, maxlen: %d\n",errno,w,strlen(st),strerror(errno),maxlen);
+		EPRINTF4("error:%d, only %d of %d bytes written: %s, maxlen: %d\n",errno,w,strlen(st),strerror(errno),maxlen);
 	}
-	close(fd);
+	closeFd(fd);
 }
 
 void t_GlimpseLog::Advance(char *msg)

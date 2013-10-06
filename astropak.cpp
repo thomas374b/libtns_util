@@ -23,11 +23,15 @@
 #include <time.h>
 #include <stdio.h>
 
+
 #include "tns_util/astropak.h"
 #include "tns_util/daemonic.h"
 
-// #define SHOW_COMPILER_MOD 
+#ifndef MODNAME
+#define MODNAME __FILE__
+#endif
 #include "tns_util/copyright.h"
+
 
 double geographische_Laenge	= 12.44230;
 double geographische_Breite	= 51.25549;
@@ -173,7 +177,7 @@ bool atDayTime(double height, time_t now)
 		_tnsutil_dayCount = thisDay;
 	}
 
-	EPRINTF("astropak.cpp: sr: %02d:%02d:%02d now: %02d:%02d:%02d ss: %02d:%02d:%02d", 
+	EPRINTF8("astropak.cpp: sr: %02d:%02d:%02d now: %02d:%02d:%02d ss: %02d:%02d:%02d", 
 			sr->hour, sr->minute, sr->second,
 			TM->tm_hour, TM->tm_min, TM->tm_sec,
 			ss->hour, ss->minute, ss->second);

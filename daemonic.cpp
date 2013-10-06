@@ -19,21 +19,33 @@
  */
 
 
-
-
-#include "tns_util/daemonic.h"
-#include "tns_util/timer.h"
-
-//#define SHOW_COMPILER_MOD 
-#include "tns_util/copyright.h"
-
-
 #include <time.h>
-#include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <stdlib.h>
 
+#include "tns_util/porting.h"
+#include "tns_util/daemonic.h"
+#include "tns_util/timer.h"
+
+#ifndef MODNAME
+#define MODNAME __FILE__
+#endif
+#include "tns_util/copyright.h"
+
+
+
+#if _WINDOWS | WIN32
+int geteuid() {
+	return 0;	
+}
+int getpid() {
+	return 0;
+}
+int fork() {
+	return 0;	
+}
+#endif
 
 bool detached = false;
 FILE *elogf = NULL;
@@ -55,9 +67,12 @@ void open_errlog(const char *target)
 	}
 	elogf = fopen(st,"a");
 
+#if _WINDOWS | WIN32
+#else
 	// redirect old stdout and stderr to our new log file
 	stderr = elogf;
 	stdout = elogf;
+#endif
 #endif	
 }
 
@@ -91,21 +106,21 @@ char *mk_logString(time_t now, bool humanReadableTime, char *msg, char *buffer)
 // just pump(append) some bytes to a file
 int writeOrAppend(char *filename, char *buffer)
 {
-	int fd = open(filename,O_WRONLY|O_APPEND);
+	fileHandle fd = openFd(filename, O_WRONLY|O_APPEND);
 	if (fd < 0) {
 		switch (errno) {
 			case ENOENT:
-				fd = open(filename,O_WRONLY|O_CREAT,0644);
-				if (fd != -1) {
+				fd = openFileMode(filename, O_WRONLY|O_CREAT, 0644);
+				if (fd != INVALID_HANDLE_VALUE) {
 					break;
 				}
 			default:
-				EPRINTF("open %s: %s\n",filename,strerror(errno));
+				EPRINTF1("open %s: %s\n", filename, strerror(errno));
 				return -1;
 		}
 	}
-	write(fd,buffer,strlen(buffer));
-	close(fd);
+	writeFd(fd, buffer, strlen(buffer));
+	closeFd(fd);
 	return 0;
 }
 
@@ -149,7 +164,7 @@ void write_pidfile(const char *target)
 		
 	char st[1024];
 	snprintf(st,768,"/var/run/%s.pid",target);	
-	int fd = open(st,O_RDWR|O_CREAT|O_TRUNC,0644);
+	fileHandle fd = openFileMode(st, O_RDWR|O_CREAT|O_TRUNC, 0644);
 	if (fd < 0) {
 		char s2[1024];
 		sprintf(s2,"open(\"%s\")",st);
@@ -157,12 +172,15 @@ void write_pidfile(const char *target)
 		return;
 	}
 	snprintf(st,768,"%d\n",getpid());	
-	write(fd,st,strlen(st));
-	close(fd);
+	writeFd(fd,st,strlen(st));
+	closeFd(fd);
 }
+
 
 void daemonize(const char *target)
 {
+#if _WINDOWS | WIN32
+#else
 	if (fork() == 0) { // child
 		write_pidfile(target);
 		
@@ -173,4 +191,6 @@ void daemonize(const char *target)
 	} else {	// parent
 		exit(0);		
 	}
+#endif
 }
+

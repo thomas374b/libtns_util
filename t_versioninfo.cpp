@@ -22,9 +22,12 @@
 
 
 #define IMPLEMENT_T_VERSION_INFO_H
-#include "tns_util/t_versioninfo.h"
 
-//#define SHOW_COMPILER_MOD 
+
+#include "tns_util/t_versioninfo.h"
+#ifndef MODNAME
+#define MODNAME __FILE__
+#endif
 #include "tns_util/copyright.h"
 
 

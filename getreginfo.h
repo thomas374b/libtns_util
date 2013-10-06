@@ -48,22 +48,22 @@
 #ifndef _GETREGINFO_H
 #define _GETREGINFO_H
 
-#include "tns_utils/win32_export.h"
+#include "win32_export.h"
 
-DLL_EXPORT bool getRegOption(char *cSubKey, char *cName, char *cValue);
-DLL_EXPORT bool getRegOption(char *cSubKey, char *cName, char *cValue, HKEY hkParent);
+TNS_UTIL_API bool getRegOption(char *cSubKey, char *cName, char *cValue);
+TNS_UTIL_API bool getRegOption(char *cSubKey, char *cName, char *cValue, HKEY hkParent);
 
-DLL_EXPORT bool writeRegOption(char *cSubKey, char *cName, char *value);
-DLL_EXPORT bool writeRegOption(char *cSubKey, char *cName, char *cValue, HKEY hkParent);
-DLL_EXPORT bool writeRegOption(char *cSubKey, char *cName, DWORD dwValue, HKEY hkParent);
+TNS_UTIL_API bool writeRegOption(char *cSubKey, char *cName, char *value);
+TNS_UTIL_API bool writeRegOption(char *cSubKey, char *cName, char *cValue, HKEY hkParent);
+TNS_UTIL_API bool writeRegOption(char *cSubKey, char *cName, DWORD dwValue, HKEY hkParent);
 
-DLL_EXPORT HRESULT getRegOption(wchar_t *subkey, wchar_t *name, wchar_t *value);
-DLL_EXPORT HRESULT getRegOption(wchar_t *wcSubKey, wchar_t *wcName, wchar_t *csValue, wchar_t *wcMachine);
+TNS_UTIL_API HRESULT getRegOption(wchar_t *subkey, wchar_t *name, wchar_t *value);
+TNS_UTIL_API HRESULT getRegOption(wchar_t *wcSubKey, wchar_t *wcName, wchar_t *csValue, wchar_t *wcMachine);
 
 
 
-#undef DLL_EXPORT
-#undef DLL_CLASS
+//#undef DLL_EXPORT
+//#undef DLL_CLASS
 
 
 #endif

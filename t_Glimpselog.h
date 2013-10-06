@@ -22,14 +22,21 @@
 #define _T_GLIMPSELOG_H
 
 
+#include "tns_util/porting.h"		// need fileHandle
+
+
 class t_GlimpseLog {
 private:
-	int fd,offset,maxlen;
+	fileHandle fd;
+	int offset,maxlen;
 	char logfile[512];
 	char lastlogstring[2048];
 public:
 	t_GlimpseLog() {
+#if _WINDOWS | WIN32
+#else
 		fd = -1;
+#endif
 		offset = -1;
 		maxlen = 0;
 		lastlogstring[0] = '\0';	
@@ -38,7 +45,7 @@ public:
 	void Write(char * msg);
 	void Advance(char * msg);
 	void Advance(void);
-	int getFD(void) {return fd;};
+	fileHandle getFD(void) {return fd;};
 };
 
 

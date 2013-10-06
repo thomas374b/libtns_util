@@ -22,17 +22,19 @@
 // From input file "/home/pantec/src/functions/t_sorter.p"
 // #include <p2c/p2c.h>
 
-//#define SHOW_COMPILER_MOD 
-#include "tns_util/copyright.h"
 
 #define T_SORTER_G
-
 #include "tns_util/t_sorter.h"
+#ifndef MODNAME
+#define MODNAME __FILE__
+#endif
+#include "tns_util/copyright.h"
+
+
+
 
 #ifdef DEBUG
-
 #include <stdio.h>
-
 #endif
 
 
@@ -200,60 +202,63 @@ int reccount = 0;
 
 void t_sorter::sort(int start, int ende)  // recursive sort procedure
 {
-  int l = 0;
-  int h = 0;
+	int l = 0;
+	int h = 0;
 
 #ifdef DEBUG
-  fprintf(stderr,"%d. t_sorter->sort(%d,%d)\n",reccount,start,ende);
-  reccount++;
+	fprintf(stderr,"%d. t_sorter->sort(%d,%d)\n",reccount,start,ende);
+	reccount++;
 #endif
-  int FORLIM_;
+	int FORLIM_;
   
-  if (ende < size)
-     FORLIM_ = ende;
-    else
-     FORLIM_ = size -1; 
-    
-  if (start >= FORLIM_)
-    return;			// don't sort lists with only one element
-
-  if ((start+1) == FORLIM_)        // case for lists with 2 elements 
-     {                          
-      if (value(start) > value(FORLIM_))
-         {                      // swap if not correct order
-          void *p;
+	if (ende < size) {
+		FORLIM_ = ende;
+	} else {
+		FORLIM_ = size -1; 
+	}
+	if (start >= FORLIM_) {
+		return;			// don't sort lists with only one element
+	}
+	if ((start+1) == FORLIM_) {
+		// case for lists with 2 elements 
+                               
+		if (value(start) > value(FORLIM_)) { 
+			// swap if not correct order
+			void *p;
           
-          p = A[start];
-          A[start] = A[FORLIM_];
-          A[FORLIM_] = p;
-         }
-      
-      return;   
-     }     
+			p = A[start];
+			A[start] = A[FORLIM_];
+			A[FORLIM_] = p;
+		}
+		return;   
+	}     
 
-  double avg = Average(start, FORLIM_);
+	double avg = Average(start, FORLIM_);
 
-  for (int i = start; i <= FORLIM_; i++)
-    if (higher(i, avg))
-      {
-       T1[h] = A[i];
-       h++;
-      }
-    else
-      {
-       T0[l] = A[i];
-       l++;
-      }
-      
-  if ((h == 0) || (l == 0))		// all elements in list have same value 
-     return;                            // and other list is empty
+	for (int i = start; i <= FORLIM_; i++) {
+		if (higher(i, avg)) {
+			T1[h] = A[i];
+			h++;
+		} else {
+			T0[l] = A[i];
+			l++;
+		}
+	}
+  
+	if ((h == 0) || (l == 0))	{	// all elements in list have same value 
+		return;                            // and other list is empty
+	}
 
-  for (int i = 0; i < l; i++)
-    A[i + start] = T0[i];
-
-  for (int i = 0; i < h; i++)
-    A[i + l + start] = T1[i];
-
+	{
+		for (int i = 0; i < l; i++) {
+			A[i + start] = T0[i];
+		}
+	}
+	{
+		for (int i = 0; i < h; i++) {
+			A[i + l + start] = T1[i];
+		}
+	}
 #ifdef DEBUG
   fprintf(stderr,"%d. lolist=%d\n",reccount,l);
 #endif

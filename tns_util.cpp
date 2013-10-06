@@ -50,10 +50,10 @@ static char SCCS_ID [] = "@(#) tns_util.cpp \\main\\2 @(#)";
 #include <winsock.h>
 #include <stdio.h>
 
+
 #include "tns_util/tns_util.h"
 #include "tns_util/utils.h"
 #include "tns_util/mkopts.h"
-
 
 
 BOOL APIENTRY DllMain( HANDLE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved)

@@ -45,35 +45,39 @@
 
 
 
-// #ifndef _WIN32_EXPORT_H
-// #define _WIN32_EXPORT_H
+#ifndef _WIN32_EXPORT_H
+#define _WIN32_EXPORT_H
 
+#if _WINDOWS | WIN32
+	// Windows hat kein PI
+	#define M_PI	3.14159265358979323844
+	#define snprintf _snprintf
 
-#ifdef _WIN32
-	#ifdef MODULE_G
-//		#ifdef TNS_UTIL_EXPORTS
-//			#define DLL_EXPORT	extern
-//			#define DLL_CLASS	class
-//		#else
-		#define DLL_EXPORT __declspec(dllexport)
-		#define DLL_CLASS	class DLL_EXPORT
-//		#define DLL_NAMESPACE	namespace DLL_EXPORT
-//		#endif
+	#ifdef _MONOLITH
+		/* static linking of all object files to one executable (no DLL) */
+		#define	TNS_UTIL_API			
+		#define TNS_UTIL_API_CLASS		class
 	#else
+		/* dynamic linking with DLL */
 		#ifdef TNS_UTIL_EXPORTS
-			#define DLL_EXPORT	extern
-			#define DLL_CLASS	class
-//			#define DLL_NAMESPACE namespace
+			/* if included in  compilation of DLL */
+			#define TNS_UTIL_API __declspec(dllexport)
 		#else
-			#define DLL_EXPORT __declspec(dllimport)
-			#define DLL_CLASS	class DLL_EXPORT
-//			#define DLL_NAMESPACE	namespace DLL_EXPORT
+			/* if included in compilation of main.c */
+			#define TNS_UTIL_API __declspec(dllimport)
 		#endif
+	
+		#define TNS_UTIL_API_CLASS		class TNS_UTIL_API
 	#endif
+
+	#define TNS_UTIL_API_EXTERN		extern TNS_UTIL_API
 #else
-	#define DLL_EXPORT	extern
-	#define DLL_CLASS	class
-//	#define DLL_NAMESPACE namespace
+	/* mimic the windows declaration for externals */
+	#define	TNS_UTIL_API			extern
+	#define TNS_UTIL_API_EXTERN		extern
+	#define TNS_UTIL_API_CLASS		class
 #endif
 
-// #endif 
+
+
+#endif // _WIN32_EXPORT_H

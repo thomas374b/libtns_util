@@ -18,20 +18,19 @@
  * 
  */
 
-
-
-
-#include "tns_util/timer.h"
-#include "tns_util/daemonic.h"
-
-//#define SHOW_COMPILER_MOD 
-#include "tns_util/copyright.h"
-
 #include <stdio.h>
-#include <unistd.h>
-#include <sys/time.h>
 #include <signal.h>
 #include <time.h>
+
+
+#include "tns_util/porting.h"
+#include "tns_util/timer.h"
+#include "tns_util/daemonic.h"
+#ifndef MODNAME
+#define MODNAME __FILE__
+#endif
+#include "tns_util/copyright.h"
+
 
 #ifdef AIX
 	extern "C" {
@@ -41,6 +40,8 @@
 #endif  
 
 
+#if _WINDOWS | WIN32
+#endif
 
 #ifndef OLDSTYLE_TIMER
 
@@ -48,8 +49,8 @@ long start_time = 0;
 
 long _get_time(void)
 {
-	timeval tv;
-	gettimeofday(&tv, (struct timezone *)NULL);
+	timeVal tv;
+	getTimeOfDay(&tv, (struct timeZone *)NULL);
 	return ((tv.tv_sec*1000) + (tv.tv_usec / 1000));
 }
 

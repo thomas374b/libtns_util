@@ -19,19 +19,28 @@
  */
 
 
-
-
 #include "tns_util/utils.h"
+#include "tns_util/porting.h"
+
+//#define SHOW_COMPILER_MOD 
+#ifndef MODNAME
+#define MODNAME __FILE__
+#endif
+#include "tns_util/copyright.h"
+
+#if _WINDOWS | WIN32
+#else
+	#include <dirent.h>
+#endif
 
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <dirent.h>
 #include <fcntl.h>
 
-#define SHOW_COMPILER_MOD 
-#include "tns_util/copyright.h"
 
+#if _WINDOWS | WIN32
+#else
 // Kommentar eigentlich total überflüssig
 int __max(int a, int b)		// could be a macro
 {
@@ -48,7 +57,7 @@ int __min(int a, int b)
    else 
      return b;
 }       
-
+#endif
 
 char unit_prefix[8] = " kMGTE";
 
@@ -100,7 +109,8 @@ int log2(int n)
 }
 
 
-
+#if _WINDOWS | WIN32
+#else
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // ist wahr, wenn es aus der Datei des Filedescriptors 'was zu lesen gibt  
 // gewartet wird ca. 10ms
@@ -129,10 +139,12 @@ int FD_Ready(int fd, int to)	// same with user timeout in µsec
 //#else
   select(fd+1,&Read_Set,0,0,&TimeOut);
 //#endif    
-  if FD_ISSET(fd,&Read_Set)
-       return 1;
-    else
-       return 0;   
+
+	if (FD_ISSET(fd,&Read_Set)) {
+		return 1;
+	} else {
+		return 0;   
+	}
 }
 
 int FD_Writeable(int fd)	// return true if fd is _IMMEDEATLY_ writeable
@@ -158,9 +170,9 @@ int FD_Writeable(int fd)	// return true if fd is _IMMEDEATLY_ writeable
     else
        return 0;   
 }
+#endif
 
-
-char fexist(char *s)		// return true if file "s" exists
+bool fexist(char *s)		// return true if file "s" exists
 {
 	if (s == NULL)
 	   return false;
@@ -173,14 +185,14 @@ char fexist(char *s)		// return true if file "s" exists
 #endif	
 	   return false;
 	}
-	int fd = open(s,O_RDONLY); 
+	fileHandle fd = openFd(s,O_RDONLY); 
 	if (fd < 0) {
 #ifdef DEBUG
 		fprintf(stderr,"open(%s): %s\n",s,strerror(errno));
 #endif	
 	   return false;
 	}
-	close(fd);
+	closeFd(fd);
 	return true;		
 }
 
@@ -197,15 +209,18 @@ char *strip_slash(char *argv0)
 
 long int filelen(char *s)		
 {
-	int fd = open(s,O_RDONLY);
+	fileHandle fd = openFd(s,O_RDONLY);
 	if (fd < 0)
 	   return -1;
 	   
-	long int len = lseek(fd,0,SEEK_END);
-	close(fd);
+	long int len = lseekFd(fd,0,SEEK_END);
+	closeFd(fd);
 	return len;
 }
 
+
+#if _WINDOWS | WIN32
+#else
 char test_dir(char *s)
 {
    DIR *dir;
@@ -222,7 +237,7 @@ char test_dir(char *s)
 
    return false;  
 }
-
+#endif
 
 char strnrcmp(char *s1, char *s2, unsigned int len)
 {

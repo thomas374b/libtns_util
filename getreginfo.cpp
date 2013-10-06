@@ -58,12 +58,12 @@ static char SCCS_ID [] = "@(#) getreginfo.cpp \\main\\6 @(#)";
 	#define VERSION		"\\main\\1"
 #endif
 
-#include "tns_utils/copyright.h"
-		mk_CopyrightString(MODNAME);
+#include "copyright.h"
+//		mk_CopyrightString(MODNAME);
 
 
 #define MODULE_G
-#include "tns_util/getRegInfo.h"
+#include "getRegInfo.h"
 
 #include <atlbase.h>
 
@@ -77,7 +77,7 @@ HRESULT getRegOption(wchar_t *wcSubKey, wchar_t *wcName, wchar_t *wcValue, wchar
 		return E_INVALIDARG;
 	}
 	HKEY hKey;
-	DWORD dwRet = RegConnectRegistry(wcMachine,HKEY_LOCAL_MACHINE, &hKey);
+	DWORD dwRet = RegConnectRegistry(wcMachine, HKEY_LOCAL_MACHINE, &hKey);
 	switch (dwRet) {			// map ERROR_xxx to proper HRESULTs
 		case ERROR_SUCCESS:
 			break;

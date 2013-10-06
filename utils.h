@@ -28,42 +28,50 @@
 #include <sys/types.h>
 /* #include <sys/socket.h> */
 #include <stdlib.h>
-#include <unistd.h>
-#include <netdb.h>
-#include <sys/time.h>
 #include <stdio.h>
 #include <errno.h>
 
+#include "tns_util/win32_export.h"
 
-extern int __max(int a, int b);
-extern int __min(int a, int b);
+#if _WINDOWS | WIN32
+#else
+	#include <unistd.h>
+	#include <netdb.h>
+	#include <sys/time.h>
+	
+	extern int __max(int a, int b);
+	extern int __min(int a, int b);
+	
+	extern int FD_Ready(int fd); 
+	int FD_Ready(int fd, int to);
+	int FD_Writeable(int fd);
+#endif
 
-extern int FD_Ready(int fd);
-extern int FD_Ready(int fd, int to);
-extern int FD_Writeable(int fd);
-extern char fexist(char *s);
-extern long int filelen(char *s);	// return -1 if file doesnt exist
-extern char test_dir(char *s);		// true if s is a directory
-extern char strnrcmp(char *s1, char *s2,unsigned  int len);
 
-extern long power(int base, int exp);
+
+TNS_UTIL_API bool fexist(char *s);
+TNS_UTIL_API long int filelen(char *s);	// return -1 if file doesnt exist
+TNS_UTIL_API char test_dir(char *s);		// true if s is a directory
+TNS_UTIL_API char strnrcmp(char *s1, char *s2, unsigned int len);
+
+TNS_UTIL_API long power(int base, int exp);
 // #define pow2(x)	power(2,x)
 #define pow2(x)		(1 << x)
 
-extern int log2(int q);
+TNS_UTIL_API int log2(int q);
 
-extern void print_kM(double d);
-extern char *sprint_kM(double d, char *buf);
+TNS_UTIL_API void print_kM(double d);
+TNS_UTIL_API char *sprint_kM(double d, char *buf);
 	// print a number in %3.1f format with proper unit prefixes to stdout
 
-extern char *strip_slash(char *fullpath);		// basename()
+TNS_UTIL_API char *strip_slash(char *fullpath);		// basename()
 
 //extern void ErrorMsg(const char st[]);
 #define ErrorMsg(x)	perror(x)
 //extern void ErrorMsg(const char st[],int n);
 
 #ifdef AIX
-#include <sys/select.h>
+	#include <sys/select.h>
 #endif
 
 // #ifndef FD_SET

@@ -28,7 +28,11 @@
 #endif
 
 #include <time.h>
-#include <netinet/in.h>
+
+#if _WINDOWS | WIN32
+#else
+	#include <netinet/in.h>
+#endif
 
 
 #ifdef AIX

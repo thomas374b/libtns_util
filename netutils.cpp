@@ -18,18 +18,15 @@
  * 
  */
 
-
-
-
-#include "tns_util/netutils.h"
-#include "tns_util/utils.h"
-#include "tns_util/daemonic.h"
-
-//#define SHOW_COMPILER_MOD 
-#include "tns_util/copyright.h"
-
-
 #include <string.h>
+
+
+#include "netutils.h"
+#include "utils.h"
+#include "daemonic.h"
+#include "copyright.h"
+
+
 
 
 char *decIPstring(unsigned long address, char *buffer)

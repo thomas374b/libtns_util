@@ -28,7 +28,7 @@
 #ifndef _READLN_H
 #define _READLN_H
 
-
+#include "tns_util/porting.h"		// need fileHandle
 
 class t_buffer {
 public:
@@ -43,9 +43,10 @@ public:
 	virtual int lowLevelRead(char *buf, int size);
 		// blocking version
 private:
-	int fd,bufsize;
+	fileHandle fd;
+	int bufsize;
 	long int offs,eot,rd;
-	char fend;
+	bool fend;
 	char *buffer;
 };
 

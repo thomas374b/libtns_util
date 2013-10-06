@@ -19,15 +19,14 @@
  */
 
 
-#include "tns_util/t_peer.h"
-#include "tns_util/utils.h"
-#include "tns_util/netutils.h"
-#include "tns_util/daemonic.h"
-
 #include <string.h>
 
-//#define SHOW_COMPILER_MOD 
-#include "tns_util/copyright.h"
+
+#include "t_peer.h"
+#include "utils.h"
+#include "netutils.h"
+#include "daemonic.h"
+#include "copyright.h"
 
 
 const char *internal_errmsg[5] = {

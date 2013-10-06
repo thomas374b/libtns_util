@@ -19,13 +19,16 @@
  */
 
 
-
-#include "tns_util/t_ringbuf.h"
-#include "tns_util/utils.h"
 #include <stdio.h>
 #include <string.h>
 
-//#define SHOW_COMPILER_MOD 
+
+#include "tns_util/porting.h"
+#include "tns_util/t_ringbuf.h"
+#include "tns_util/utils.h"
+#ifndef MODNAME
+#define MODNAME __FILE__
+#endif
 #include "tns_util/copyright.h"
 
 
@@ -324,7 +327,7 @@ char *t_ring_buf::Put(int inc)
 
 */
 
-int t_ring_buf::ReadFrom(int fd)
+int t_ring_buf::ReadFrom(fileHandle fd)
 {
 	int canRead = 0;
 	char *Buf = PutAddress(&canRead);	
@@ -332,7 +335,7 @@ int t_ring_buf::ReadFrom(int fd)
 	if ((Buf != NULL) && (canRead > 0)) {
 //		fprintf(stderr,"gsmBuf: 0x%08lx, canGet:%d, fd:%d\n",(long)gsmBuf, canGet,GSMPeer_fd);
 		memset(Buf, 0, canRead);
-		int rd = read(fd, Buf, canRead);
+		int rd = readFd(fd, Buf, canRead);
 		if (rd > 0) {
 			PutIncrement(rd);
 		}		
@@ -342,14 +345,14 @@ int t_ring_buf::ReadFrom(int fd)
 }
 
 
-int t_ring_buf::WriteTo(int fd)
+int t_ring_buf::WriteTo(fileHandle fd)
 {
 	int canWrite = 0;
 	char *Buf = GetAddress(&canWrite,size);
 	
 	if ((Buf != NULL) && (canWrite > 0)) {
 //		fprintf(stderr,"gsmBuf: 0x%08lx, canGet:%d, fd:%d\n",(long)gsmBuf, canGet,GSMPeer_fd);
-		int wr = write(fd, Buf, canWrite);
+		int wr = writeFd(fd, Buf, canWrite);
 		if (wr > 0) {
 			GetIncrement(wr);
 		}		

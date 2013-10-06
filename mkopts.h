@@ -24,9 +24,8 @@
 #define _MK_OPTS_H
 
 
-typedef void (*t_arg_handler)(int i, float f, char *s);
+typedef void (*t_arg_handler)(int i, double f, char *s);
 typedef void (*t_unknown_arg_handler)(int i, char *v);
-
 
 enum t_kind {	e_unknown, 
 				e_boolean, 
@@ -45,19 +44,21 @@ typedef struct {
 		const char *longflag;
 		const char *helptext;
 
-		char b;
+		bool b;
 		int i;
-		float f;
+		double f;
 		char s[256];
 
-	       } t_opts;
+} t_opts;
 
 
-extern void print_arg_defaults(char *argv0, t_opts opts[]);
-extern void scan_args(int argc, char *argv[], t_opts opts[]);
-extern void empty_func(int , float, char *);
-extern char verbose_mode;
+#include "tns_util/win32_export.h"
 
+TNS_UTIL_API void print_arg_defaults(char *argv0, t_opts opts[]);
+TNS_UTIL_API void scan_args(int argc, char *argv[], t_opts opts[]);
+TNS_UTIL_API void empty_func(int , double, char *);
+
+TNS_UTIL_API_EXTERN bool verbose_mode;
 
 extern t_unknown_arg_handler unknown_arg_handler;
 

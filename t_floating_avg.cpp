@@ -22,15 +22,19 @@
 // #define DEBUG
 // #define DEBUG_ALL
 
-#include "tns_util/t_floating_avg.h"
-
-//#define SHOW_COMPILER_MOD 
-#include "tns_util/copyright.h"
 
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
-#include <unistd.h>
+
+#include "tns_util/porting.h"
+#include "tns_util/t_floating_avg.h"
+#ifndef MODNAME
+#define MODNAME __FILE__
+#endif
+#include "tns_util/copyright.h"
+
+
  
 
 t_NamedObj::t_NamedObj()
@@ -54,24 +58,25 @@ void t_NamedObj::SetName(const char *name)
 }
 
 
-bool t_NamedObj::Save(int fd)
+bool t_NamedObj::Save(fileHandle fd)
 {
 	char buf[4096];
 	Printf(buf);
 	strcat(buf,"\n");
 	int len = strlen(buf);
-	int w = write(fd,buf,len);
+	int w = writeFd(fd,buf,len);
 	return (w == len);	 
 }
 
-bool t_NamedObj::Load(int fd)
+bool t_NamedObj::Load(fileHandle fd)
 {
+#ifdef DEBUG
 	TRACE("%s::Load(%s)\n",getClassName(),getName());
-
+#endif
 	char buf[4096];
 	memset(buf,0,4096);
 	
-	int r = read(fd,buf,4096-16);
+	int r = readFd(fd,buf,4096-16);
 	if (r <= 0)  {
 		return false;
 	}
@@ -96,24 +101,25 @@ bool t_NamedObj::Load(int fd)
 
 bool t_NamedObj::Scanf(char *buf)
 {
+#ifdef DEBUG
 	TRACE("%s::Scanf(%s)\n",getClassName(),getName());
-
+#endif
 	if (buf == NULL) {
-		EPRINTF("buffer is NULL on %s/%s::Scanf()\n",getName(),getClassName());
+		EPRINTF1("buffer is NULL on %s/%s::Scanf()\n",getName(),getClassName());
 		return false;
 	}		
 	int sl = strlen(buf);
 	if (sl < 3) {
-		EPRINTF("buffer too short on %s/%s::Scanf()\n",getName(),getClassName());
+		EPRINTF1("buffer too short on %s/%s::Scanf()\n",getName(),getClassName());
 		return false;
 	}
 	char *c_end = &buf[sl];
 	char fmt[1024];
-
+#ifdef DEBUG
 	TRACE("processing %s/%s\n",getName(),getClassName());
-
+#endif
 	if (Sptr == NULL) {
-		EPRINTF("Sptr is NULL\n");
+		EPRINTF0("Sptr is NULL\n");
 		return false;
 	}
 	
@@ -275,8 +281,9 @@ bool t_NamedRange::Scanf(char *st)
 	if (st == NULL) {
 		return false;
 	}
+#ifdef DEBUG
 	TRACE("%s %s::t_NamedRange::Scanf(%s)\n",getName(),getClassName(),st);
-
+#endif
 	float i,a;
 	char buf[256];
 	if (sscanf(st,"{min:%g, max:%g}%s",&i,&a,buf) == 3) {
@@ -330,8 +337,9 @@ bool t_NamedAverage::Scanf(char *st)
 	if (st == NULL) {
 		return false;
 	}
+#ifdef DEBUG
 	TRACE("%s %s::t_NamedAverage::Scanf(%s)\n",getName(),getClassName(),st);
-
+#endif
 	float a,l,i,x;
 	char buf[256];
 	if (sscanf(st,"{avgv:%g, len:%g, min:%g, max:%g}%s",&a,&l,&i,&x,buf) == 5) {

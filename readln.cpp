@@ -20,20 +20,20 @@
 
 
 
-
-
 #include <stdio.h>
 #include <string.h>
-#include <unistd.h>
+
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include "tns_util/porting.h"
 #include "tns_util/readln.h"
 #include "tns_util/utils.h"
-
-//#define SHOW_COMPILER_MOD 
+#ifndef MODNAME
+#define MODNAME __FILE__
+#endif
 #include "tns_util/copyright.h"
 
 
@@ -56,7 +56,7 @@ bool t_buffer::Init(char *fn, int bs)
 		fd = 0;				
 		fsize = -1;
 	} else {	
-		fd = open(fn,O_RDONLY);
+		fd = openFd(fn,O_RDONLY);
 
 		if (fd < 0)	   {
 			char s2[1024];
@@ -64,8 +64,8 @@ bool t_buffer::Init(char *fn, int bs)
 		    perror(s2);		
 		    return false;
 		} 
-		fsize = lseek(fd,0,SEEK_END);
-		lseek(fd,0,SEEK_SET);
+		fsize = lseekFd(fd,0,SEEK_END);
+		lseekFd(fd,0,SEEK_SET);
 	}	
 	bufsize = bs;
 	buffer = new char[(bufsize*2)+1024];
@@ -79,7 +79,7 @@ bool t_buffer::Init(char *fn, int bs)
 
 bool t_buffer::Init(char *fn)
 {
-	int bs;
+//	int bs;
 	struct stat stat_buf;	
 	
 	int r = stat(fn,&stat_buf);
@@ -87,10 +87,13 @@ bool t_buffer::Init(char *fn)
 		fprintf(stderr,"can't stat(%s): %s\n",fn,strerror(errno));
 		return false;
 	}
+#if _WINDOWS | WIN32
+#else
 	if (S_ISDIR(stat_buf.st_mode)) {
 		fprintf(stderr,"\"%s\" is a directory\n",fn);
 		return false;
 	}
+#endif
 	fprintf(stderr,"sizeof \"%s\" is %ld\n",fn,stat_buf.st_size);
 	return t_buffer::Init(fn, (stat_buf.st_size*2)+2048);	
 }
@@ -100,14 +103,14 @@ long int t_buffer::Pos(void)
 	if ((fsize == -1) || (fd == 0))
 		return 0;
 	
-	return lseek(fd,0,SEEK_CUR);
+	return lseekFd(fd,0,SEEK_CUR);
 }
 
 
 
 int t_buffer::lowLevelRead(char *_b, int _s)
 {	
-	return read(fd,_b,_s);
+	return readFd(fd,_b,_s);
 }
 
 char *t_buffer::ReadLn(void)
@@ -124,9 +127,9 @@ char *t_buffer::ReadLn(void)
 		return s;
 	}
 
-	if (fend == true)
+	if (fend == true) {
 		return NULL;	
-
+	}
 	lshifts++;
 
 	if (eot >= offs) {
@@ -183,9 +186,9 @@ char *t_buffer::ReadLn(void)
 
 void t_buffer::Done(void)
 {
-	if (fd > 0)
-		close(fd);
-
+	if (fd != INVALID_HANDLE_VALUE) {
+		closeFd(fd);
+	}
 	delete buffer;
 	buffer = NULL;
 }

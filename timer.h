@@ -24,11 +24,10 @@
 #define _TIMER_H
 
 
-// #include <time.h>
-#include <sys/time.h>
-#include <signal.h>
-#include <unistd.h>
+#include <time.h>
 
+//#include "tns_util/porting.h"
+#include <signal.h>
 
 
 extern long int GetTime(void);

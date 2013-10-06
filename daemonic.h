@@ -63,6 +63,7 @@ typedef void (*sighandler_t)(int);
 
 #ifdef TARGETNAME
 
+
 	#ifdef WITH_SYSLOG
 		#error still at work
 /*	
@@ -83,13 +84,25 @@ typedef void (*sighandler_t)(int);
 								}												
 */
 	#else
-		#define LPRINTF(fmt,args...)	{								\
+		#if _WINDOWS | WIN32
+			#define LPRINTF(fmt,args)
+
+			#define EPRINTF0(fmt)				{char z[4096];_snprintf(z,3072,fmt);do_logging(TARGETNAME,z);}
+			#define EPRINTF(fmt, args)			{char z[4096];_snprintf(z,3072,fmt,args);do_logging(TARGETNAME,z);}
+			#define EPRINTF1(fmt, arg0, arg1)	{char z[4096];_snprintf(z,3072,fmt,arg0, arg1);do_logging(TARGETNAME,z);}
+//			#define EPRINTF2(fmt, arg0, arg1, arg2)
+			#define EPRINTF4(fmt, arg0, arg1, arg2, arg3, arg4)
+			#define EPRINTF8(fmt, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
+
+//			#define EPRINTF(fmt, args, ...)	{char z[4096];snprintf(z,3072,fmt,__VA_ARGS__);do_logging(TARGETNAME,z);}
+		#else
+			#define LPRINTF(fmt,args...)	{								\
 							char z[4096];				\
 							snprintf(z,3072,fmt,##args);			\
 							do_logging(TARGETNAME,z);	\
 						}
 
-		#define EPRINTF(fmt,args...)	{									\
+			#define EPRINTF(fmt,args...)	{									\
 								if (detached == false) {				\
 									fprintf(stderr,fmt,##args);			\
 									fprintf(stderr,"\n");			\
@@ -105,13 +118,23 @@ typedef void (*sighandler_t)(int);
 									}								\
 								}									\
 							}			
+							
+			#define EPRINTF0 EPRINTF
+			#define EPRINTF1 EPRINTF
+			#define EPRINTF4 EPRINTF							
+			#define EPRINTF8 EPRINTF
+		#endif
 	#endif
 #endif
 
-#ifdef TRACE_ALL
-	#define TRACE(x...)	EPRINTF(x)
+#if _WINDOWS | WIN32
+	#define TRACE(x)
 #else
-	#define TRACE(x...)
+	#ifdef TRACE_ALL
+		#define TRACE(x...)	EPRINTF(x)
+	#else
+		#define TRACE(x...)
+	#endif
 #endif
 
 

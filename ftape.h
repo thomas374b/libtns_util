@@ -38,7 +38,7 @@
 
 class t_filetape {
 private:
-	char *_check(char *buf, char cond, int inc, int p);
+	char *_check(char *buf, bool cond, int inc, int p);
 	int size,pos,ext_cnt;
 	char *basepath;
 	char *track;

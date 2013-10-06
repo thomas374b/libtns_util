@@ -6,14 +6,15 @@
  */
 
 
-
-#include "t_LogBuffer.h"
-
-#include "tns_util/daemonic.h"
-#include "tns_util/copyright.h"
-
 #include <stdio.h>
 #include <string.h>
+
+#include "tns_util/t_LogBuffer.h"
+#include "tns_util/daemonic.h"
+#ifndef MODNAME
+#define MODNAME __FILE__
+#endif
+#include "tns_util/copyright.h"
 
 
 t_LogBuffer::t_LogBuffer(int s, int bs) {

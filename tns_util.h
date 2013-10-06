@@ -49,12 +49,15 @@
 // that uses this DLL. This way any other project whose source files include this file see 
 // TNS_UTIL_API functions as being imported from a DLL, wheras this DLL sees symbols
 // defined with this macro as being exported.
+/*
 #ifdef TNS_UTIL_EXPORTS
-#define TNS_UTIL_API __declspec(dllexport)
+	#define TNS_UTIL_API __declspec(dllexport)
 #else
-#define TNS_UTIL_API __declspec(dllimport)
+	#define TNS_UTIL_API __declspec(dllimport)
 #endif
+*/
 
+#include "win32_export.h"
 
 #define VERSION(major,minor,patchlevel)			((major<<16) | (minor << 8) | patchlevel)
 #define UTS_VERSION(major,minor,patchlevel)		_T(#major"."#minor"."#patchlevel)
@@ -63,9 +66,9 @@
 #define BASECORE_VERSION_STRING					UTS_VERSION(9,1,0)
 
 #if (BASECORE_VERSION > VERSION(5,1,0))
-#pragma message("is higher")
+	#pragma message("is higher")
 #else
-#pragma message("is lower")
+	#pragma message("is lower")
 #endif
 
 

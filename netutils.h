@@ -51,14 +51,21 @@
 //	#endif
 #endif
 
-#include <sys/socket.h> 
-#include <netinet/in.h>
+
+#if _WINDOWS | WIN32
+#else
+	#include <sys/socket.h> 
+	#include <netinet/in.h>
+	#include <netdb.h>
+#endif
+
+
 
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
-#include <netdb.h>
+
 
 
 #ifndef LINGER_TIMEOUT

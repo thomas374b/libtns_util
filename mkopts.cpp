@@ -22,28 +22,38 @@
 
 
 #include <stdio.h>
-#include <unistd.h>
 #include <string.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
- 
+
+#include "tns_util/porting.h"
 #include "tns_util/readln.h"
 #include "tns_util/mkopts.h"
 #include "tns_util/utils.h"
 #include "tns_util/netutils.h"
 
-//#define SHOW_COMPILER_MOD 
+#ifndef MODNAME
+#define MODNAME __FILE__
+#endif
 #include "tns_util/copyright.h"
 
+#ifndef ETC_PREFIX
+	#define	ETC_PREFIX ""
+#endif
 
-char verbose_mode;
+#ifndef PREFIX
+	#define PREFIX	"/opt"
+#endif
+
+
+bool verbose_mode;
 
 t_unknown_arg_handler unknown_arg_handler = NULL;
 
 
-void empty_func(int , float, char *)
+void empty_func(int , double, char *)
 {
 }
 
@@ -53,7 +63,7 @@ void demo_unknown_arg_handler(int i, char *v)
 }
 
 
-char flag_used(char F, t_opts opts[])
+bool flag_used(char F, t_opts opts[])
 {
 	int j = 0;
 	while (opts[j].kind != e_unknown)	
@@ -67,7 +77,7 @@ char flag_used(char F, t_opts opts[])
 	return false;
 }
 
-char short_of(char F, char *argvi, t_opts opts[])
+bool short_of(char F, char *argvi, t_opts opts[])
 {
 	if (flag_used(F,opts) == true)
 	   return false;
@@ -174,32 +184,33 @@ char open_opts_file(char *argv0, char *fname)
 	char *home;
 	home = getenv("HOME");
 
-	if (home != NULL)
-	   {	
+	if (home != NULL) {	
 	    sprintf(fname,"%s/.%src",home,argv0);
 
-	    if (fexist(fname) == true)
-		return true;
-
+		if (fexist(fname) == true) {
+			return true;
+		}
 	    sprintf(fname,"%s/etc/%s.conf",home,argv0);
 
-	    if (fexist(fname) == true)
-		return true;
+		if (fexist(fname) == true) {
+			return true;
+		}
 
 	    sprintf(fname,"%s/share/%s/%src",home,argv0,argv0);
 
-	    if (fexist(fname) == true)
-		return true;
-	   }
+		if (fexist(fname) == true) {
+			return true;
+		}
+	}
 
 	sprintf(fname,ETC_PREFIX"/etc/%s.conf",argv0);
-	if (fexist(fname) == true)
+	if (fexist(fname) == true) {
 	   return true;	
-
+	}
 	sprintf(fname,PREFIX"/share/%s/%src",argv0,argv0);
-	if (fexist(fname) == true)
+	if (fexist(fname) == true) {
 	   return true;	
-
+	}
 	return false;
 }
 
@@ -211,16 +222,16 @@ void save_manstyle_opts(char *argv0, t_opts opts[])
 	
 	sprintf(fname,"%s.manstyle-options",argv0);
 	
-	int fd = open(fname,O_RDWR|O_TRUNC|O_CREAT,0644);
-	if (fd < 0)
-	   return;
-	   
+	fileHandle fd = openFileMode(fname,O_RDWR|O_TRUNC|O_CREAT,0644);
+	if (fd == INVALID_HANDLE_VALUE) {
+		return;
+	}	   
 	   
 	char st[1024];
 	st[0] = '\0';
  	
 	sprintf(st,"\n.\\\"\n.SH OPTIONS\n");
-	write(fd,st,strlen(st));   
+	writeFd(fd,st,strlen(st));   
 
 	int k = 0;   
 	while (opts[k].kind != e_unknown)	
@@ -250,45 +261,45 @@ void save_manstyle_opts(char *argv0, t_opts opts[])
 		break;	
 	     }
 
- 	   write(fd,st,strlen(st));
+ 	   writeFd(fd,st,strlen(st));
 	   	
 	   k++;
 	  }
 
 	sprintf(st,"\n.PP\n.TP\n.B \\-\\^s, \\fB\\-\\-\\^saverc\\fR\n"
 	"Save opts to personal rcfile \\fI~/.%src\\fR .\n",argv0);
-	write(fd,st,strlen(st));  
+	writeFd(fd,st,strlen(st));  
 
 	sprintf(st,".TP\n.B \\-\\^v, \\fB\\-\\-\\^verbose\\fR\n"
 	"Be more verbose.\n");
-	write(fd,st,strlen(st));  
+	writeFd(fd,st,strlen(st));  
 
 	sprintf(st,".TP\n.B \\-\\^h, \\fB\\-\\-\\^help\\fR\n"
 	"Print a help screen with defaults and exit.\n");
-	write(fd,st,strlen(st));  
+	writeFd(fd,st,strlen(st));  
 	
 	sprintf(st,".TP\n.B \\-\\^V\n"
 	"Print version and copyright information, then exit. "
 	"To get detailed version and copyright information "
 	"about used modules do a\n\n.BR\n"
 	"strings %s | grep copyright: \\fB[ENTER]\\fR\n\n",argv0);
-	write(fd,st,strlen(st));  
+	writeFd(fd,st,strlen(st));  
 
 	sprintf(st,".SH FILES\n.TP\n.B ~/.%src\n.TP\n.B ~/etc/%s.conf\n"
 	           ".TP\n.B ~/share/%s/%src\n.TP\n.B /opt/etc/%s.conf\n"
 		   ".TP\n.B /opt/share/%s/%src\n.PP\n",
 		   argv0,argv0,argv0,argv0,argv0,argv0,argv0);
-	write(fd,st,strlen(st));
+	writeFd(fd,st,strlen(st));
 
 	sprintf(st,"\\fB%s\\fR looks at these locations to find its defaults. "
 	           "If a file is found further searching is aborted. All "
 		   "values can be overwritten by its corresponding commandline "
 		   "options.\n.\\\"\n.SH ENVIRONMENT\nThe \\fBHOME\\fR variable "
 		   "is used.\n", argv0);
-	write(fd,st,strlen(st));		   
+	writeFd(fd,st,strlen(st));		   
 
 
-	close(fd);
+	closeFd(fd);
 	   	 	
 }
 
@@ -311,7 +322,7 @@ void save_opts_file(char *argv0, t_opts opts[])
 	if (verbose_mode == true)
 	   fprintf(stderr,"saving options to %s\n",fname); 
 
-	int fd = open(fname,O_RDWR|O_TRUNC|O_CREAT,0640);
+	fileHandle fd = openFileMode(fname, O_RDWR|O_TRUNC|O_CREAT, 0640);
 
 	if (fd <= 0)
 	   {
@@ -351,12 +362,12 @@ void save_opts_file(char *argv0, t_opts opts[])
 		break;	
 	     }
 
- 	   write(fd,st,strlen(st));
+ 	   writeFd(fd,st,strlen(st));
 	   	
 	   k++;
 	  }
 
-	close(fd);
+	closeFd(fd);
 }
 
 
@@ -461,7 +472,7 @@ void scan_opts_file(char *argv0, t_opts opts[])
 		 case e_boolean:
 		   sprintf(format,"%s %%d",opts[j].longflag);  	
 		   if (sscanf(st,format,&i) == 1)
-		       opts[j].b = i;
+		       opts[j].b = (i>0);
 		   break;			
 
 		 case e_integer:
@@ -534,11 +545,14 @@ void scan_args(int argc, char *argv[], t_opts opts[])
 //	       continue;	
 			exit(1);
 		}		      	
+#if _WINDOWS|WIN32
+#else
 		if (strcmp(argv[i],"-V") == 0) {
 //	       fprintf(stderr,"%s %s%s",strip_slash(argv[0]),version_string,revision_date);
 			fprintf(stderr,"%s\n",copyright_info);	
 			exit(0);
 		} 
+#endif
 		t1 = short_of('v',argv[i],opts);
 		t2 = (strcmp(argv[i],"--verbose") == 0);   
 	
@@ -581,7 +595,7 @@ void scan_args(int argc, char *argv[], t_opts opts[])
 			t2 = (strcmp(argv[i],c) == 0);	
 
 			if (t1 || t2 || t3 || t4) {
-				int d;
+//				int d;
 				float f;
 				char s[256];
   	
@@ -633,7 +647,11 @@ void scan_args(int argc, char *argv[], t_opts opts[])
 										}
 									} 
 									if (bIsStr == true) {
+#if _WINDOWS|WIN32
+										opts[j].i = 0;	// TODO	
+#else
 										opts[j].i = GetTCPPort(s,0);
+#endif
 										if (opts[j].i == 0) {
 											fprintf(stderr,"unknown service description \"%s\" from arg %s\n",opts[j].s, opts[j].longflag);
 										} else {				
@@ -731,7 +749,7 @@ void scan_args(int argc, char *argv[], t_opts opts[])
 				}			     
 			}
 			if (got == true) {
-				opts[j].handler(opts[j].i,opts[j].f,opts[j].s);				  
+				opts[j].handler(opts[j].i, opts[j].f, opts[j].s);				  
 //				if (verbose_mode == true)
 //					fprintf(stderr,"%d\t%s\n",j,opts[j].helptext);
 				break;		    	

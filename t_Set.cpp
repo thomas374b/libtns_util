@@ -20,15 +20,19 @@
 
 
 
-#define _T_SET_G
-#include "tns_util/t_Set.h"
-#include "tns_util/utils.h"
-
 #include <stdio.h>
 #include <string.h>
 
-//#define SHOW_COMPILER_MOD 
+#define _T_SET_G
+
+
+#include "tns_util/t_Set.h"
+#include "tns_util/utils.h"
+#ifndef MODNAME
+#define MODNAME __FILE__
+#endif
 #include "tns_util/copyright.h"
+
 
 
 //module definition and procedures go here

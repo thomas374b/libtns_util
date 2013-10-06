@@ -28,6 +28,8 @@
 #define T_RINGBUF_H
 
 
+#include "tns_util/porting.h"		// need fileHandle
+
 // implement a ringbuffer for blockwise IO with 
 // different in- and out- blocksizes
 // if a blockwrite exceeds the end of the buffer,
@@ -90,8 +92,8 @@ public:
 	void PutWrap(void);
 	void GetWrap(void);
 	
-	int ReadFrom(int fd);
-	int WriteTo(int fd);
+	int ReadFrom(fileHandle fd);
+	int WriteTo(fileHandle fd);
 };
 
 
