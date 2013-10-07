@@ -80,7 +80,8 @@
 	#define openFileMode(a,b,c)		open(a,b,c)
 	#define readFd(a,b,c)			read(a,b,c)
 	#define writeFd(a,b,c)			write(a,b,c)
-	#define closeFd(a)				close(a)
+	#define lseekFd(a,b,c)			lseek(a,b,c)	
+	#define closeFd(a)			close(a)
 
 	#define	INVALID_HANDLE_VALUE	-1
 

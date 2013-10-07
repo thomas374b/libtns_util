@@ -586,7 +586,7 @@ endif
 	@echo "refreshing dependency $@" 	
 	@$(CC) $(CFLAGS) -DMODNAME=\"$*\" $(INCLDIR) -M $*  		|\
 	sed -e "s/^.*\.o\:\ /built\/$(UMA)\/&/g;s/\: $*/& built\/.versions/g"  	>$@
-	rm -f built/.versions
+#	rm -f built/.versions
 
 $(OPA)/%.o: 
 	@echo [CC] $< \-\> $@

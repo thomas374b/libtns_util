@@ -33,8 +33,11 @@
 #endif
 #include "tns_util/copyright.h"
 
-
+#if _WINDOWS|WIN32
 #include <WinSock2.h>
+#else
+#include <netinet/in.h>
+#endif
 
 
 
