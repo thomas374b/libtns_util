@@ -2,12 +2,12 @@
 
 #include <stdio.h>
 
-#include "porting.h"
+#include "tns_util/porting.h"
 
 #ifndef MODNAME
 #define MODNAME __FILE__
 #endif
-#include "copyright.h"
+#include "tns_util/copyright.h"
 
 char *winErrorStr(DWORD dwErr, char *buffer)
 {

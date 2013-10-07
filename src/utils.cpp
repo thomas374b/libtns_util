@@ -19,8 +19,9 @@
  */
 
 
-#include "tns_util/utils.h"
 #include "tns_util/porting.h"
+#include "tns_util/utils.h"
+
 
 //#define SHOW_COMPILER_MOD 
 #ifndef MODNAME
@@ -109,35 +110,36 @@ int log2(int n)
 }
 
 
-#if _WINDOWS | WIN32
-#else
+//#if _WINDOWS | WIN32
+//#else
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // ist wahr, wenn es aus der Datei des Filedescriptors 'was zu lesen gibt  
 // gewartet wird ca. 10ms
 //______________________________________________________________________
-int FD_Ready(int fd)		// return true if input data available
+int FD_Ready(unsigned int fd)		// return true if input data available
 {
-	return FD_Ready(fd,10000);
+	return FD_ReadyTo(fd, 10000);
 }
 
 
-int FD_Ready(int fd, int to)	// same with user timeout in µsec
+int FD_ReadyTo(unsigned int fd, int to)	// same with user timeout in µsec
 {
   fd_set Read_Set;
   struct timeval TimeOut;
 
-	if (fd < 0)
+  if (fd < 0) {
 	   return false;	// not a valid file descriptor
+  }
+  FD_ZERO(&Read_Set);
+  FD_SET(fd, &Read_Set);
 
-//  FD_ZERO(&Read_Set);
-  FD_SET(fd,&Read_Set);
   TimeOut.tv_sec=0;
   TimeOut.tv_usec=to;
 
 //#ifdef hpux
 //  select(fd+1,(int *)&Read_Set,0,0,&TimeOut);
 //#else
-  select(fd+1,&Read_Set,0,0,&TimeOut);
+  select(fd+1, &Read_Set, 0, 0, &TimeOut);
 //#endif    
 
 	if (FD_ISSET(fd,&Read_Set)) {
@@ -147,16 +149,17 @@ int FD_Ready(int fd, int to)	// same with user timeout in µsec
 	}
 }
 
-int FD_Writeable(int fd)	// return true if fd is _IMMEDEATLY_ writeable
+int FD_Writeable(unsigned int fd)	// return true if fd is _IMMEDEATLY_ writeable
 {
   fd_set Write_Set;
   struct timeval TimeOut;
 
-	if (fd < 0)
+  if (fd < 0) {
 	   return false;	// not a valid file descriptor
+  }
 
   FD_ZERO(&Write_Set);
-  FD_SET(fd,&Write_Set);
+  FD_SET(fd, &Write_Set);
   TimeOut.tv_sec=0;
   TimeOut.tv_usec=10000;
 
@@ -165,12 +168,13 @@ int FD_Writeable(int fd)	// return true if fd is _IMMEDEATLY_ writeable
 //#else
   select(fd+1,0,&Write_Set,0,&TimeOut);
 //#endif    
-  if FD_ISSET(fd,&Write_Set)
+  if (FD_ISSET(fd,&Write_Set)) {
        return 1;
-    else
+  } else {
        return 0;   
+  }
 }
-#endif
+//#endif
 
 bool fexist(char *s)		// return true if file "s" exists
 {

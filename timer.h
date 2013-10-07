@@ -26,15 +26,15 @@
 
 #include <time.h>
 
-//#include "tns_util/porting.h"
+#include "tns_util/porting.h"
 #include <signal.h>
 
 
-extern long int GetTime(void);
-extern void InitTimer(void);
-extern void DoneTimer(void);
-extern char *timepostfix(double milliseconds, char *buffer);
-extern char *TimeString(time_t now, char *buffer);
+TNS_UTIL_API_EXTERN long int GetTime(void);
+TNS_UTIL_API_EXTERN void InitTimer(void);
+TNS_UTIL_API_EXTERN void DoneTimer(void);
+TNS_UTIL_API_EXTERN char *timepostfix(double milliseconds, char *buffer);
+TNS_UTIL_API_EXTERN char *TimeString(time_t now, char *buffer);
 
 
 #ifdef OLDSTYLE_TIMER

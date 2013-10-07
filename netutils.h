@@ -30,6 +30,7 @@
 // #define u_short	unsigned short
 // #endif
 
+#include "tns_util/porting.h"
 
 #include <sys/types.h>
 
@@ -77,12 +78,13 @@
 #endif
 
 
-extern int GetTCPPort(char proto[64],int defport);
+TNS_UTIL_API int GetTCPPort(char proto[64],int defport);
 extern void hostname_str(struct sockaddr_in *client,char *result);
 extern char *decIPstring(unsigned long address, char *buffer);
 
 extern void ShutDown(int sd);	// extra strong linger shutdown sequence 
 
+TNS_UTIL_API void setNonblockingIO(int sd, bool noBlock);
 extern int clConnect(char *hname, int port_num, char may_fail);
 extern int clConnect_to(char *, int);
 

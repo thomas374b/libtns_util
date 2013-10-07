@@ -9,10 +9,13 @@
 
 
 #if _WINDOWS | WIN32
+	#include <WinSock2.h>
+
 	#include <windows.h>
 	#include <time.h>
 	#include <fcntl.h>
 	#include <sys/timeb.h>
+
 
 	#include "win32_export.h"
 
@@ -48,6 +51,21 @@
 	#define	false		FALSE
 	#define true		TRUE
 	#define StringPtr	LPCTSTR
+
+	#define closeSock(x)		closesocket(x)
+	#define readSock(a,b,c)		recv(a,b,c,0)
+	#define writeSock(a,b,c)	send(a,b,c,0)
+
+	#define ENOTCONN		WSAENOTCONN
+	#define EWOULDBLOCK		WSAEWOULDBLOCK
+	#define ECONNREFUSED	WSAEHOSTUNREACH
+	#define ECONNRESET		WSAECONNRESET
+	#define EAFNOSUPPORT	WSAEOPNOTSUPP
+
+	#define SHUT_WR			SD_SEND
+	#define SHUT_RDWR		SD_BOTH
+	// {SD_SEND,SD_RECEIVE,SD_BOTH}
+	
 #else
 	#include "tns_util/win32_export.h"
 
@@ -76,6 +94,11 @@
 	#include <sys/time.h>
 	#include <unistd.h>
 	#include <fcntl.h>
+
+
+	#define closeSock(x)		close(x)
+	#define readSock(a,b,c)		read(a,b,c)
+	#define writeSock(a,b,c)	write(a,b,c)
 #endif
 
 

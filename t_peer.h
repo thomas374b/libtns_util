@@ -71,7 +71,8 @@ public:
 
 class t_peer {
 public:
-	int fd,id,soff,bufsize/*,RP,WP*/;
+	unsigned int fd;
+	int id, soff, bufsize/*,RP,WP*/;
 	char connected,sent,broken,sleeping;
 	unsigned long address;
 	char name[256],nick[256];
@@ -132,7 +133,8 @@ public:
 #endif
 
 protected:
-	int FD_MaxNum,count;
+	unsigned int FD_MaxNum;
+	int count;
 	t_peer *first;
 	t_peer *insertedLast;
 
@@ -140,7 +142,7 @@ protected:
 
 private:
 	int maxp,fd_max,maxh;
-	int Server_Socket;
+	unsigned int Server_Socket;
 
 };
 

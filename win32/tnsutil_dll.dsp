@@ -36,25 +36,26 @@ RSC=rc.exe
 # PROP BASE Output_Dir "Release"
 # PROP BASE Intermediate_Dir "Release"
 # PROP BASE Target_Dir ""
-# PROP Use_MFC 0
+# PROP Use_MFC 2
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "built/win32-Release"
-# PROP Intermediate_Dir "built/win32-Release"
+# PROP Output_Dir "Release"
+# PROP Intermediate_Dir "Release"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TNSUTIL_DLL_EXPORTS" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /I ".." /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TNS_UTIL_EXPORTS" /D TARGETNAME=\"libtnsutil.dll\" /FR /FD /c
+# ADD CPP /nologo /MD /W3 /Gi /GX /O2 /I "../.." /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "TNS_UTIL_EXPORTS" /D TARGETNAME=\"libtnsutil.dll\" /D "_WINDLL" /D "_AFXDLL" /FR /FD /c
 # SUBTRACT CPP /YX /Yc /Yu
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x407 /d "NDEBUG"
-# ADD RSC /l 0x407 /d "NDEBUG"
+# ADD RSC /l 0x407 /d "NDEBUG" /d "_AFXDLL"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo /o"built/win32-Release/tnsutil.bsc"
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib /nologo /dll /machine:I386 /out:"../Distribution/Release/tnsutil.dll"
+# ADD LINK32 Ws2_32.lib /nologo /dll /pdb:none /machine:I386 /out:"../../Distribution/Release/tnsutil.dll"
+# SUBTRACT LINK32 /nodefaultlib
 
 !ELSEIF  "$(CFG)" == "tnsutil_dll - Win32 Debug"
 
@@ -64,26 +65,26 @@ LINK32=link.exe
 # PROP BASE Intermediate_Dir "tnsutil_dll___Win32_Debug"
 # PROP BASE Ignore_Export_Lib 0
 # PROP BASE Target_Dir ""
-# PROP Use_MFC 0
+# PROP Use_MFC 2
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "built/win32-Debug"
-# PROP Intermediate_Dir "built/win32-Debug"
+# PROP Output_Dir "Debug"
+# PROP Intermediate_Dir "Debug"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GX /O2 /I ".." /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TNS_UTIL_EXPORTS" /D TARGETNAME=\"libtnsutil.dll\" /FR /FD /c
 # SUBTRACT BASE CPP /YX /Yc /Yu
-# ADD CPP /nologo /MDd /W3 /GX /ZI /Od /I ".." /D "WIN32" /D "DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TNS_UTIL_EXPORTS" /D TARGETNAME=\"libtnsutil.dll\" /FR /FD /c
+# ADD CPP /nologo /MD /W3 /Gi /GX /ZI /Od /I "../.." /D "WIN32" /D "DEBUG" /D "_WINDOWS" /D "_MBCS" /D "TNS_UTIL_EXPORTS" /D TARGETNAME=\"libtnsutil.dll\" /D "_WINDLL" /D "_AFXDLL" /FR /FD /c
 # SUBTRACT CPP /YX /Yc /Yu
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x407 /d "NDEBUG"
-# ADD RSC /l 0x407 /d "NDEBUG"
+# ADD RSC /l 0x407 /d "NDEBUG" /d "_AFXDLL"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo /o"built/win32-Release/tnsutil.bsc"
 # ADD BSC32 /nologo /o"built/win32-Debug/tnsutil.bsc"
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib /nologo /dll /machine:I386 /out:"built/win32-Release/tnsutil.dll"
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib /nologo /dll /incremental:yes /debug /machine:I386 /out:"..\Distribution\Debug\tnsutil.dll" /pdbtype:sept
+# ADD LINK32 Ws2_32.lib /nologo /dll /incremental:yes /debug /machine:I386 /out:"../../Distribution/Debug/tnsutil.dll" /pdbtype:sept
 # SUBTRACT LINK32 /map
 
 !ENDIF 
@@ -97,64 +98,75 @@ LINK32=link.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
-SOURCE=.\astropak.cpp
+SOURCE=..\src\astropak.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\daemonic.cpp
+SOURCE=..\src\daemonic.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\ftape.cpp
+SOURCE=..\src\ftape.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\mkopts.cpp
+SOURCE=.\getreginfo.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\porting.cpp
+SOURCE=..\src\mkopts.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\readln.cpp
+SOURCE=..\src\netutils.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\StdAfx.cpp
-# ADD CPP /Yc"stdafx.h"
+SOURCE=..\src\porting.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\t_floating_avg.cpp
+SOURCE=..\src\readln.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\t_Glimpselog.cpp
+SOURCE=.\stdafx.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\t_LogBuffer.cpp
+SOURCE=..\src\t_floating_avg.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\t_ringbuf.cpp
+SOURCE=..\src\t_Glimpselog.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\t_Set.cpp
+SOURCE=..\src\t_LogBuffer.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\t_sorter.cpp
+SOURCE=..\src\t_peer.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\t_versioninfo.cpp
+SOURCE=..\src\t_ringbuf.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\timer.cpp
+SOURCE=..\src\t_Set.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\t_sorter.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\t_versioninfo.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\timer.cpp
 # End Source File
 # Begin Source File
 
@@ -162,7 +174,7 @@ SOURCE=.\tns_util.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\utils.cpp
+SOURCE=..\src\utils.cpp
 # End Source File
 # End Group
 # Begin Group "Header Files"
@@ -170,39 +182,39 @@ SOURCE=.\utils.cpp
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
-SOURCE=.\astropak.h
+SOURCE=..\astropak.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\copyright.h
+SOURCE=..\copyright.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\daemonic.h
+SOURCE=..\daemonic.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\ftape.h
+SOURCE=..\ftape.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\getreginfo.h
+SOURCE=..\getreginfo.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\mkopts.h
+SOURCE=..\mkopts.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\netutils.h
+SOURCE=..\netutils.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\porting.h
+SOURCE=..\porting.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\readln.h
+SOURCE=..\readln.h
 # End Source File
 # Begin Source File
 
@@ -210,55 +222,59 @@ SOURCE=.\resource.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\StdAfx.h
+SOURCE=.\stdafx.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\t_floating_avg.h
+SOURCE=..\t_floating_avg.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\t_Glimpselog.h
+SOURCE=..\t_Glimpselog.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\t_LogBuffer.h
+SOURCE=..\t_LogBuffer.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\t_peer.h
+SOURCE=..\t_peer.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\t_ringbuf.h
+SOURCE=..\t_ringbuf.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\t_Set.h
+SOURCE=..\t_Set.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\t_sorter.h
+SOURCE=..\t_sorter.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\t_versioninfo.h
+SOURCE=..\t_versioninfo.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\timer.h
+SOURCE=..\timer.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\tns_util.h
+SOURCE=..\tns_util.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\utils.h
+SOURCE=.\tnsutil.def
 # End Source File
 # Begin Source File
 
-SOURCE=.\win32_export.h
+SOURCE=..\utils.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\win32_export.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"

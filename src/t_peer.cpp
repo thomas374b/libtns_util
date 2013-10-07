@@ -21,12 +21,16 @@
 
 #include <string.h>
 
+#include "tns_util/porting.h"
+#include "tns_util/t_peer.h"
+#include "tns_util/utils.h"
+#include "tns_util/netutils.h"
+#include "tns_util/daemonic.h"
 
-#include "t_peer.h"
-#include "utils.h"
-#include "netutils.h"
-#include "daemonic.h"
-#include "copyright.h"
+#ifndef MODNAME
+#define MODNAME __FILE__
+#endif
+#include "tns_util/copyright.h"
 
 
 const char *internal_errmsg[5] = {
@@ -66,9 +70,7 @@ void t_peer::Init(int new_fd,sockaddr_in *CA, int new_id)
     WP = 0;	
     */	
 
-	if (fcntl(fd,F_SETFL,O_NONBLOCK) < 0) {
-		EPRINTF("fcntl(%d,NONBLOCK): %s\n",fd,strerror(errno));
-	}
+	setNonblockingIO(fd, true);
 
 	if (CA != NULL) {
 		address = CA->sin_addr.s_addr;
@@ -103,16 +105,16 @@ int t_peer::Write(char *buf,int len)
  	
     	for (int i=0; i<len; i++) {
 			if (buf[i] == '\n')
-				w += write(fd,s,2);
+				w += writeSock(fd,s,2);
 			else
-				w += write(fd,&buf[i],1);
+				w += writeSock(fd,&buf[i],1);
 
   	    	wr++;	
 		}
 	     // we ignore the number of written bytes from those
 	     // shitty NT-telnet clients
 	} else {
-		wr = write(fd,buf,len); 
+		wr = writeSock(fd,buf,len); 
 // 	    *buf = '\0';
 	}
 	if ((len > wr) && (wr > 0)) {
@@ -145,7 +147,7 @@ t_peer *t_peer::Insert(int new_fd,sockaddr_in *CA, int new_id)
 
 void t_peer::intError(time_t etime, int func)
 {
-	char st[256];
+//	char st[256];
 
       switch(errno)  {
          case 0: 
@@ -176,7 +178,7 @@ void t_peer::intError(time_t etime, int func)
                  
 		    
 			default:
-				EPRINTF("default handled error %d: %s\n",errno,strerror(errno));
+				EPRINTF1("default handled error %d: %s\n", errno, strerror(errno));
 //         case 11:
 			case EWOULDBLOCK:
 				if ((etime - timeout) > BLOCKED_TIMEOUT) {
@@ -240,9 +242,9 @@ void t_Peers::Init(int m, int ss_fd)
 	maxp = m * m;
 	maxh = m;
 	Server_Socket = ss_fd;
-	if (fcntl(Server_Socket,F_SETFL,O_NONBLOCK) < 0) {
-		EPRINTF("fcntl(server_socket,nonblock): %s\n",strerror(errno));	
-	}
+
+	setNonblockingIO(Server_Socket, true);
+
 	count = 0;
 	first = NULL;
 	insertedLast = NULL;
@@ -346,7 +348,7 @@ bool t_Peers::Accept(void)
        return false;	
 
     struct sockaddr_in ClientAddr;
-#if (LIBC5 || AIX || cygwin)
+#if (LIBC5 || AIX || cygwin || WIN32)
     int CNL = sizeof(ClientAddr);
 #else
     unsigned int CNL = sizeof(ClientAddr);
@@ -455,13 +457,13 @@ void t_Peers::Prepare_Select(void)
 	FD_ZERO(&Read_FD_Set);	
 
 	FD_MaxNum = 0;
-	FD_MaxNum = __max(Server_Socket,FD_MaxNum);	
-	FD_SET(Server_Socket,&Read_FD_Set);
+	FD_MaxNum = __max(Server_Socket, FD_MaxNum);	
+	FD_SET(Server_Socket, &Read_FD_Set);
 
 	t_peer *peer = first;
 	while (peer != NULL) {
 		if (peer->connected == true) {
-			FD_SET(peer->fd,&Read_FD_Set);
+			FD_SET(peer->fd, &Read_FD_Set);
 
 			if (FD_MaxNum < peer->fd)
 				FD_MaxNum = peer->fd; 

@@ -54,7 +54,7 @@ long _get_time(void)
 	return ((tv.tv_sec*1000) + (tv.tv_usec / 1000));
 }
 
-long GetTime(void)
+long int GetTime(void)
 {
 	return (_get_time() - start_time);
 }

@@ -21,11 +21,20 @@
 #include <string.h>
 
 
-#include "netutils.h"
-#include "utils.h"
-#include "daemonic.h"
-#include "copyright.h"
 
+#include "tns_util/porting.h"
+
+#include "tns_util/netutils.h"
+#include "tns_util/utils.h"
+#include "tns_util/daemonic.h"
+
+#ifndef MODNAME
+#define MODNAME __FILE__
+#endif
+#include "tns_util/copyright.h"
+
+
+#include <WinSock2.h>
 
 
 
@@ -36,10 +45,10 @@ char *decIPstring(unsigned long address, char *buffer)
 	
 	i = address / 65536;
 	j = address % 65536;
-	k = i / 256;
-	l = i % 256;
-	m = j / 256;
-	n = j % 256;
+	k = (unsigned char)((i / 256) & 0x0FF);
+	l = (unsigned char)((i % 256) & 0x0FF);
+	m = (unsigned char)((j / 256) & 0x0FF);
+	n = (unsigned char)((j % 256) & 0x0FF);
 
 #if (__sparc__  || sun || hpux || AIX)
 	sprintf(buffer,"%d.%d.%d.%d",k,l,m,n);
@@ -108,7 +117,7 @@ int clConnect(char *hname, int port_num, char may_fail)
   HostName = gethostbyname(hname);
  
   if (HostName == (struct hostent *) 0) {
-       EPRINTF("gethostbyname(%s): %s\n",ST,strerror(errno));
+       EPRINTF1("gethostbyname(%s): %s\n",ST,strerror(errno));
        if (may_fail == false)
 	  exit(2);
 	else
@@ -134,7 +143,7 @@ int clConnect(char *hname, int port_num, char may_fail)
 	 EPRINTF("connect(): %s\n",strerror(errno)); 	
 	 exit(4);
 	} else {
-	 close(_Sock);
+	 closeSock(_Sock);		
 	 return -1;		
 	}	
    }
@@ -150,6 +159,42 @@ int clConnect_to(char *hname, int port_num)
 	return clConnect(hname,port_num,false);
 }
 
+void setNonblockingIO(int sd, bool noBlock) 
+{
+#if _WINDOWS|WIN32
+	int retval;
+
+	if (noBlock) {
+		unsigned long arg = 1;
+		retval = ioctlsocket(sd, FIONBIO, &arg);
+	} else {
+		retval = ioctlsocket(sd, FIONBIO, 0);
+	}
+	
+	if (retval == SOCKET_ERROR) {
+	   int le =  WSAGetLastError();
+	   EPRINTF1("ioctlsocket(%d,FIONBIO): %d, %s\n", sd, le);
+/*
+WSANOTINITIALISED A successful WSAStartup call must occur before using this function. 
+WSAENETDOWN The network subsystem has failed. 
+WSAEINPROGRESS A blocking Windows Sockets 1.1 call is in progress, or the service provider is still processing a callback function. 
+WSAENOTSOCK The descriptor s is not a socket. 
+WSAEFAULT The argp parameter is not a valid part of the user address space. 
+*/
+	}
+#else	   
+	if (noBlock) {
+		fcntl(sd, F_SETFL, O_NONBLOCK|O_NDELAY);
+	} else {	
+		int fflag = fcntl(sd,F_GETFL);
+		fflag &= ~(O_NDELAY | O_NONBLOCK);
+		if (fcntl(sd, F_SETFL, fflag) < 0) {
+			EPRINTF1("fcntl(%d,SETFL): %s\n", sd, strerror(errno));
+		}
+	}	
+#endif
+}
+
 
 void ShutDown(int sd)
 {
@@ -161,56 +206,52 @@ void ShutDown(int sd)
 #if (linux || hpux || cygwin || Linux)   
    if (setsockopt(sd,SOL_SOCKET,SO_LINGER,&L,sizeof(struct linger)) == -1) {
 #else
-  #if (__sparc__  || sun || AIX)
+  #if (__sparc__  || sun || AIX || _WINDOWS || WIN32)
    if (setsockopt(sd,SOL_SOCKET,SO_LINGER,(char *)&L,sizeof(struct linger)) == -1) {
   #else
       #error edit typecast of setsockopt for your system
   #endif   
 #endif
 
-		EPRINTF("setsockopt(%d): %s\n",sd,strerror(errno));  
+		EPRINTF1("setsockopt(%d): %s\n",sd,strerror(errno));  
 	}
 
-   
-	int fflag = fcntl(sd,F_GETFL);
+	// clear nonblocking flags, i.e. make it wait
+	setNonblockingIO(sd, false);
 
-	fflag &= ~(O_NDELAY | O_NONBLOCK);
-	if (fcntl(sd,F_SETFL,fflag) < 0) {
-		EPRINTF("fcntl(%d,SETFL): %s\n",sd,strerror(errno));
-	}
-
-   int rt = shutdown(sd,SHUT_WR);
+   int rt = shutdown(sd, SHUT_WR);
    if (rt < 0) {
 	switch(errno) {
 		case ENOTCONN:	break;
-		default:	EPRINTF("shutdown(%d,1): %s\n",sd,strerror(errno));	break;
+		default:	EPRINTF1("shutdown(%d,1): %s\n", sd, strerror(errno));	break;
 	}
 	
    }
 
 	if (FD_Ready(sd)) {
 		char *dummy = new char [64*1024];
-		read(sd,dummy,(64*1024));	
+		readSock(sd, dummy, (64*1024));	
 		delete dummy;
 	}		
 	
-   fcntl(sd,F_SETFL,O_NONBLOCK|O_NDELAY);  // get it faster to shut up
-   rt = shutdown(sd,SHUT_RDWR);
+	// set nonblocking IO
+	setNonblockingIO(sd, true);
+   
+   rt = shutdown(sd, SHUT_RDWR);
    if (rt < 0) {
        switch(errno) {
 	  case ENOTCONN:
 	    break;
 
 	  default:
-	    EPRINTF("shutdown(%d,2): %s\n",sd,strerror(errno)); 	
+	    EPRINTF1("shutdown(%d,2): %s\n", sd, strerror(errno)); 	
 	    break;
 	 }	
       }	
 
 //   usleep(50000);
-
-	if (close(sd) < 0) {
-		EPRINTF("close(%d) after shutdown: %s\n",sd,strerror(errno));
+	if (closeSock(sd) < 0) {
+		EPRINTF1("close(%d) after shutdown: %s\n", sd, strerror(errno));
 	}
 }
 
@@ -218,7 +259,7 @@ void ShutDown(int sd)
 int svAccept(int Sock)
 {
    int peer;
-#if (LIBC5 || AIX || cygwin)
+#if (LIBC5 || AIX || cygwin || WIN32)
 	int CNameLen;
 #else
    unsigned int CNameLen;

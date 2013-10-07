@@ -58,14 +58,19 @@ static char SCCS_ID [] = "@(#) getreginfo.cpp \\main\\6 @(#)";
 	#define VERSION		"\\main\\1"
 #endif
 
-#include "copyright.h"
+#ifndef MODNAME
+#define MODNAME __FILE__
+#endif
+#include "tns_util/copyright.h"
 //		mk_CopyrightString(MODNAME);
 
 
 #define MODULE_G
-#include "getRegInfo.h"
+#include "tns_util/getRegInfo.h"
+
 
 #include <atlbase.h>
+
 
 
 HRESULT getRegOption(wchar_t *wcSubKey, wchar_t *wcName, wchar_t *wcValue, wchar_t *wcMachine)
@@ -77,7 +82,8 @@ HRESULT getRegOption(wchar_t *wcSubKey, wchar_t *wcName, wchar_t *wcValue, wchar
 		return E_INVALIDARG;
 	}
 	HKEY hKey;
-	DWORD dwRet = RegConnectRegistry(wcMachine, HKEY_LOCAL_MACHINE, &hKey);
+	USES_CONVERSION;
+	DWORD dwRet = RegConnectRegistry(W2A(wcMachine), HKEY_LOCAL_MACHINE, &hKey);
 	switch (dwRet) {			// map ERROR_xxx to proper HRESULTs
 		case ERROR_SUCCESS:
 			break;
@@ -92,7 +98,7 @@ HRESULT getRegOption(wchar_t *wcSubKey, wchar_t *wcName, wchar_t *wcValue, wchar
 			return E_FAIL;
 	}
 	CRegKey		CKey;
-	dwRet = CKey.Open(hKey,wcSubKey,KEY_QUERY_VALUE);
+	dwRet = CKey.Open(hKey, W2A(wcSubKey), KEY_QUERY_VALUE);
 	if (dwRet != ERROR_SUCCESS) {
 #ifdef _DEBUG
 		fwprintf(stderr,L"open key \"%s\" failed, dwRet %d\n",wcSubKey,dwRet);
@@ -100,7 +106,7 @@ HRESULT getRegOption(wchar_t *wcSubKey, wchar_t *wcName, wchar_t *wcValue, wchar
 		return E_FAIL;
 	}
 	unsigned long rLen = 1536;
-	dwRet = CKey.QueryValue(wcValue,wcName,&rLen);
+	dwRet = CKey.QueryValue(W2A(wcValue), W2A(wcName), &rLen);
 	CKey.Close();
 	
 	if (dwRet != ERROR_SUCCESS) {
@@ -138,7 +144,8 @@ HRESULT getRegOption(wchar_t *wcSubKey, wchar_t *wcName, wchar_t *wcValue)
 		return E_INVALIDARG;
 	}
 	CRegKey		CKey;
-	DWORD dwRet = CKey.Open(HKEY_LOCAL_MACHINE,wcSubKey,KEY_QUERY_VALUE);
+	USES_CONVERSION;
+	DWORD dwRet = CKey.Open(HKEY_LOCAL_MACHINE, W2A(wcSubKey),KEY_QUERY_VALUE);
 	if (dwRet != ERROR_SUCCESS) {
 #ifdef _DEBUG
 		fwprintf(stderr,L"open key \"%s\" failed, dwRet %d\n",wcSubKey,dwRet);
@@ -146,7 +153,7 @@ HRESULT getRegOption(wchar_t *wcSubKey, wchar_t *wcName, wchar_t *wcValue)
 		return E_FAIL;
 	}
 	unsigned long rLen = 1536;
-	dwRet = CKey.QueryValue(wcValue,wcName,&rLen);
+	dwRet = CKey.QueryValue(W2A(wcValue), W2A(wcName), &rLen);
 	CKey.Close();
 	if (dwRet != ERROR_SUCCESS) {
 #ifdef _DEBUG
@@ -175,7 +182,7 @@ bool getRegOption(char *cSubKey, char *cName, char *cValue, HKEY hkParent)
 	USES_CONVERSION;
 	wchar_t *wcSubKey = A2W(cSubKey);
 
-	if (CKey.Open(hkParent,wcSubKey,KEY_QUERY_VALUE) != ERROR_SUCCESS) {
+	if (CKey.Open(hkParent, W2A(wcSubKey), KEY_QUERY_VALUE) != ERROR_SUCCESS) {
 #ifdef _DEBUG
 		fwprintf(stderr,L"open key \"%s\" failed\n",wcSubKey);
 #endif
@@ -185,7 +192,7 @@ bool getRegOption(char *cSubKey, char *cName, char *cValue, HKEY hkParent)
 	unsigned long rLen = 1536;
 	wchar_t wcValue[2048];
 	wchar_t *wcName = A2W(cName);
-	unsigned long R = CKey.QueryValue(wcValue,wcName,&rLen);
+	unsigned long R = CKey.QueryValue(W2A(wcValue), W2A(wcName), &rLen);
 	DWORD dwValue;
 
     // from the last query one get the length of a possible string, but the only string 
@@ -196,14 +203,14 @@ bool getRegOption(char *cSubKey, char *cName, char *cValue, HKEY hkParent)
 		strcpy(cValue,"\0");
 	} else {
 		// here it is possible that the key value can be a DWORD or an String
-		R = CKey.QueryValue(dwValue, wcName);
+		R = CKey.QueryValue(dwValue, W2A(wcName));
 		if (R == ERROR_SUCCESS) {
 			// yes, it's a number
 			sprintf(cValue,"%d",dwValue);
 		} else {
 			// lets try for a string
 			rLen = 1536;
-			R = CKey.QueryValue(wcValue, wcName, &rLen);
+			R = CKey.QueryValue(W2A(wcValue), W2A(wcName), &rLen);
 			if (R == ERROR_SUCCESS) {
 				// we've got the registry value
 				strcpy(cValue,W2A(wcValue));
@@ -248,7 +255,7 @@ public:
 			return ERROR_BAD_FORMAT;
 		}
 
-		LONG lRes = CRegKey::Create( hkParent, wcSubKey, wcName); 
+		LONG lRes = CRegKey::Create( hkParent, W2A(wcSubKey), W2A(wcName)); 
 		if (lRes != ERROR_SUCCESS) {
 #ifdef _DEBUG
 			fwprintf(stderr,L"create key \"%s\", value \"%s\" failed with %ld\n",wcSubKey,wcName,lRes);
@@ -260,12 +267,12 @@ public:
 		USES_CONVERSION;
 		wchar_t *wcValue = A2W(cValue);
 		wchar_t *wcName = A2W(cName);
-		return CRegKey::SetValue(wcValue,wcName);
+		return CRegKey::SetValue(W2A(wcValue), W2A(wcName));
 	}
 	long SetValue(DWORD dwValue, char *cName) {
 		USES_CONVERSION;
 		wchar_t *wcName = A2W(cName);
-		return CRegKey::SetValue(dwValue,wcName);
+		return CRegKey::SetValue(dwValue, W2A(wcName));
 	}
 };
 
