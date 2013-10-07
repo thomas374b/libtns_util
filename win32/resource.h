@@ -1,23 +1,3 @@
-/* 
- * Thomas Pantzer: resource.h, Version: v0.1a  15.01.2006 12:31 
- * 
- * 
- * Copyright 2006 by Thomas Pantzer
- * 
- * Permission to use, copy, modify, and distribute this software for noncommercial 
- * use and without fee is hereby granted, provided that the above copyright notice 
- * appear in all copies and that both that copyright notice and this permission 
- * notice appear in supporting documentation, and that the name of the Author not be 
- * used in advertising or publicity pertaining to distribution of the software 
- * without specific, written prior permission. The Author makes no representations about
- * the suitability of this software for any purpose.  It is provided "as is" 
- * without expressed or implied warranty. 
- * 
- * 
- * pantec@dvorak.private.site   (Thomas Pantzer,,,) 
- * 
- */
-
 //{{NO_DEPENDENCIES}}
 // Microsoft Developer Studio generated include file.
 // Used by tnsutil.rc

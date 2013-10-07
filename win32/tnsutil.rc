@@ -54,8 +54,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 27,0150,4N,0611
- PRODUCTVERSION 27,0150,4N,0611
+ FILEVERSION 27,150,4,611
+ PRODUCTVERSION 27,150,4,611
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x29L
@@ -73,16 +73,16 @@ BEGIN
             VALUE "Comments", "timer, network, sort and option gadgets shared library\0"
             VALUE "CompanyName", "Siemens AG\0"
             VALUE "FileDescription", "timer, network, sort and option gadgets shared library\0"
-             VALUE "FileVersion", "API27ESR0150, NEM4NECR0611\0"
-            VALUE "InternalName", "tns_util\0"
+            VALUE "FileVersion", "API27ESR0150, NEM4NECR0611\0"
+            VALUE "InternalName", "tnsutil\0"
             VALUE "LegalCopyright", "Copyright © 1998, 1999, 2000, 2001\0"
             VALUE "LegalTrademarks", """""\0"
-            VALUE "OriginalFilename", "tns_util.dll\0"
+            VALUE "OriginalFilename", "tnsutil.dll\0"
             VALUE "PrivateBuild", """""\0"
-            VALUE "ProductName", "libtns_util\0"
- 		    VALUE "ProductVersion", "API27ESR0150, NEM4NECR0611\0"
-            VALUE "SpecialBuild", "\0"
             VALUE "ProducerInfo", "built by CCM at Thu 09/18/2003 21:58:14.87 on ATPCTWJC\0"
+            VALUE "ProductName", "libtns_util\0"
+            VALUE "ProductVersion", "API27ESR0150, NEM4NECR0611\0"
+            VALUE "SpecialBuild", "\0"
         END
     END
     BLOCK "VarFileInfo"

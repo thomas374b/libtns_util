@@ -1,6 +1,6 @@
 ; tnsutil.def : Declares the module parameters for the DLL.
 
-LIBRARY      "tns_util.dll"
+LIBRARY      "tnsutil.dll"
 DESCRIPTION  'pantecs timer, network, sort and options gadgets library'
 
 
