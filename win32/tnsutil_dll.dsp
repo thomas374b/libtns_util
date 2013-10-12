@@ -54,7 +54,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo /o"built/win32-Release/tnsutil.bsc"
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /machine:I386
-# ADD LINK32 Ws2_32.lib /nologo /dll /pdb:none /machine:I386 /out:"../../Distribution/Release/tnsutil.dll"
+# ADD LINK32 Ws2_32.lib /nologo /dll /pdb:none /machine:I386 /out:"../../IGCutils/Distribution/Release/tnsutil.dll"
 # SUBTRACT LINK32 /nodefaultlib
 
 !ELSEIF  "$(CFG)" == "tnsutil_dll - Win32 Debug"
@@ -84,7 +84,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo /o"built/win32-Debug/tnsutil.bsc"
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib /nologo /dll /machine:I386 /out:"built/win32-Release/tnsutil.dll"
-# ADD LINK32 Ws2_32.lib /nologo /dll /incremental:yes /debug /machine:I386 /out:"../../Distribution/Debug/tnsutil.dll" /pdbtype:sept
+# ADD LINK32 Ws2_32.lib /nologo /dll /incremental:yes /debug /machine:I386 /out:"../../IGCutils/Distribution/Debug/tnsutil.dll" /pdbtype:sept
 # SUBTRACT LINK32 /map
 
 !ENDIF 

@@ -18,6 +18,11 @@
  * 
  */
 
+/*
+ *  Makros um unter Windows die externen Symbole richtig zu deklarieren 
+ */
+
+
 //static char SCCS_ID [] = "@(#) win32_export.h \main\1 @(#)";
 /******************************************************************************/
 /*                                                                            */
