@@ -27,6 +27,8 @@
 #include "tns_util/porting.h"
 #include "tns_util/daemonic.h"
 
+#include "tns_util/t_freezing_avg.h"
+
 
 //_________________________________________________________
 //
@@ -70,8 +72,11 @@ public:
 		last = 1.0;
 		bias = 0.0;
 		freezeBoundaries = false;
+		max = -100000000000000.0;
+		min =  100000000000000.0;
+		size = 0.0;
 	};
-	double max,min,size;
+	double max, min, size;
 	void Reset(void);
 	bool Update(double d);
 	bool HasChanged(void);
@@ -112,7 +117,9 @@ public:
 	virtual ~t_laverage() {
 	};
 
+	double updateGradient(double v);
 	double Range(void);
+
 	virtual void Add(double);	
 	virtual void Reset(void);
 };
@@ -120,31 +127,27 @@ public:
 
 //_________________________________________________________
 //
-class t_average : public t_laverage {
+class t_average : public t_laverage, t_freezing_avg {
 private:
 	double windowLength;
 	bool calibration;
-	int updateCnt;
-	double windowSum;
 public:
-	t_laverage qErr;
 
 	t_average() {
 	    calibration = false;
 	    windowLength = 1.0;
-	    updateCnt = 0;
-	    windowSum = 0.0;
-		qErr.alen = 32.0;
 	};
+
 	void Init(double);
+
 	void Init(t_laverage *p) {
 		if (p != NULL) {
 			AvgV = p->AvgV;
 			alen = p->alen;
 			windowLength = alen;
-			qErr.alen = alen;
 		}
 	};
+
 	virtual void Add(double v);	
 	double Filtered(double fullScale);
 	void setCalibrationLen(double windowLength);
@@ -169,30 +172,7 @@ public:
 	virtual void Add(double v, bool bWarmup);	
 };
 
-//_________________________________________________________
-//
-class t_window_stack : public t_average {
-public:
-	virtual ~t_window_stack() {
-	};
 
-	int len,idx,cnt;
-	double *V;
-
-	void Init(int length);
-	void Done(void);
-	void ZeroIt(void);		
-
-	double Get(int i);
-	double Get(double I);
-	double Value(void);		// return average
-
-	double Info(void);		// shanon
-	virtual void Add(double v);		// take the next value into the window
-	virtual void Reset(void);
-					// and remove the last value
-        
-};
 
 #endif
 

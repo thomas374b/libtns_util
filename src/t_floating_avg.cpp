@@ -29,6 +29,9 @@
 
 #include "tns_util/porting.h"
 #include "tns_util/t_floating_avg.h"
+#include "tns_util/daemonic.h"
+
+
 #ifndef MODNAME
 #define MODNAME __FILE__
 #endif
@@ -302,11 +305,18 @@ bool t_NamedRange::Scanf(char *st)
 //		t_laverage
 //
 //_______________________________________________
-void t_laverage::Add(double v)
+double t_laverage::updateGradient(double v)
 {
 	delta = (v - AvgV);
 	gradient = (delta / alen);
-	AvgV += gradient;
+
+	return gradient;
+}
+
+void t_laverage::Add(double v)
+{
+	AvgV += updateGradient(v);
+	t_Range::Update(v);
 }
 
 double t_laverage::Range(void)
@@ -371,32 +381,20 @@ void t_NamedSensorAverage::Add(double v, bool bWarmup)
 //_______________________________________________
 void t_average::Add(double v)
 {
-	delta = (v - AvgV);
-	gradient = (delta / alen);
+	updateGradient(v);
 
-	double qd = delta*delta;			// quadratic error
-
-	if (updateCnt < windowLength) {
-		windowSum += v;
-		AvgV = windowSum / (updateCnt+1);	// correct value for the very first steps
-
-		qErr.alen = (updateCnt+1.0);
-		qErr.Add(qd);
-	} else {
-		qErr.Add(qd);
-		qErr.Update(qErr.AvgV);
-
+	if (cnt > windowLength) {
 		AvgV += gradient;
+	} else {
+		t_freezing_avg::Add(v);
+		AvgV = t_freezing_avg::Value();
 	}
-
 
 	if (calibration) {
 	    Update(AvgV);	// expand ranges slowly
 	} else {
 	    Update(v);		// quickly expand ranges
 	}    
-
-	updateCnt++;
 }
 
 void t_average::setCalibrationLen(double l)
@@ -404,9 +402,6 @@ void t_average::setCalibrationLen(double l)
 	alen = l;
 	calibration = true;
 	Reset();
-
-	qErr.Reset();
-	qErr.alen = l;
 }
 
 void t_average::finishCalibration(void) 
@@ -420,13 +415,6 @@ void t_average::Init(double l)
 {
 	alen = l;
 	windowLength = alen;
-	windowSum = 0.0;
-	updateCnt = 0;
-
-	qErr.alen = alen;
-	qErr.Reset();
-
-//	AvgV = 0.0;
 	t_laverage::Reset();
 }
 
@@ -435,118 +423,6 @@ double t_average::Filtered(double fs)
     return t_Range::Scaled11(AvgV) * fs;
 }
 
-
-//^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//
-//		t_window_stack
-//
-//_______________________________________________
-void t_window_stack::Init(int l)
-{
-	len = l;
-	idx = 0;
-	cnt = 0;
-
-	V = new double [len];
-	
-	Reset();
-}
-
-
-void t_window_stack::Reset(void)
-{
-	ZeroIt();
-	t_average::Reset();
-}
-
-void t_window_stack::ZeroIt(void)
-{
-	for (int i=0; i<len; i++)
-	   V[i] = 0.0;	
-}
-
-
-void t_window_stack::Done(void)
-{
-//	fprintf(stderr,"this:0x%08lx\tV:0x%08lx\n",(long)this,(long)V);
-
-	if (V != NULL)
-	   delete V;
-
-	V = NULL;
-	len = 0;
-}
-
-
-void t_window_stack::Add(double v)
-{
-	V[idx] = v;
-
-	if (cnt < len)
-	   cnt++; 
-
-	idx++;
-	idx %= len;
-
-	t_average::Add(v);
-}
-
-
-double t_window_stack::Get(int i)
-{
-//	if ((i >= len) || (i >= cnt))
-//	   {
-//	    return 0.0;
-//	   }
-	    
-	int j = idx + len - 1 - i;
-        j %= len;
-
-        return V[j]; 
-}
-
-double t_window_stack::Get(double I)
-{
-	fprintf(stderr,"t_window_stack::Get(double %g)\n",I);
-
-	double f = floor(I);
-	double c = ceil(I);
-
-	int v = (int)f;
-	int w = (int)c;
-
-	if ((w-v) == 0)
-	   fprintf(stderr,"ceil == floor\n");
-
-	double a = Get(v);
-	double b = Get(w);
-
-	double d = I - f;
-	double e = (b - a) * d;
-
-	return (a + e);
-}
-
-double t_window_stack::Value(void)
-{
-	double S = 0.0;
-	for (int i=0; i<len; i++)
-	  S += V[i];
-
-        return S/(double)cnt;
-}
-
-
-double t_window_stack::Info(void)
-{
-	double S = 0.0;
-	for (int i=0; i<len; i++)
-	  S += (V[i] * log(V[i]));
-
-
-	double	d = -S / log((double)len);
-	return d;
-}
 
 
 
