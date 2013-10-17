@@ -30,7 +30,7 @@ CODE	= -fpic # -fpcc-struct-return
 
 MAJOR = 0
 MINOR = 9
-PATCHLEVEL = 21
+PATCHLEVEL = 22
 VERSION = $(MAJOR).$(MINOR).$(PATCHLEVEL)
 
 ifeq (_${MK_DEBPKG}_,__)
@@ -76,6 +76,8 @@ CC_LINK	= $(CROSS)gcc
 CC_VERSION = $(shell $(CC) -dumpversion)
 
 SBIN_TARGET = $(shell test -f man/man8/$(TARGET).8 && echo "s")
+HAVESVN = $(shell if svn log >/dev/null 2>&1; then echo -n yes; else echo -n no; fi)
+
 
 #################################################################
 #		first fence
@@ -521,6 +523,11 @@ endif
 
 all: $(DEPEND) $(O_MAKE_T) 
 	@ls -l $(O_MAKE_T)          
+	
+sane:
+	find built/ -type f -name '*.dep' -empty -exec rm {} \;
+	rm $(OPA)/*.o $(O_MAKE_T)
+	$(MAKE)
 
 help:
 	@(echo "useful targets are"			;\
@@ -949,8 +956,13 @@ ifeq (_$(SRCS)_,__)
 built/.versions:
 	@mkdir -p built ; touch built/.versions 
 else	
+
 SRCREGEX = $(shell echo `cat .sources `|sed 's/\\//g;s/^.*=[ ]*//g;s/  /|/g')
+ifeq (_$(HAVESVN)_,_yes_)
 built/.versions: $(DEPEND)
+else
+built/.versions: 
+endif
 	@mkdir -p built ; \
 	(echo creating new ls_fulltime version list >&2 ; \
 	    for i in $(SRCS)		; \
@@ -981,6 +993,7 @@ built/.versions: $(DEPEND)
 		fi; \
 		echo "# end-of-versions created from .svn/entries";	\
 	) >built/.versions
+
 endif
 
 # debian package stuff, maintainers only
@@ -1003,8 +1016,6 @@ else
 	DEBPKG = $(shell echo lib$(TARGET) | sed "s/_//g;y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/")
 endif
 endif
-
-HAVESVN = $(shell if svn log >/dev/null 2>&1; then echo -n yes; else echo -n no; fi)
 
 ifeq (_$(HAVESVN)_,_yes_)
 DEBBUILD = $(shell svn list -v |sort -n|tail -1|awk '{print $$1}')

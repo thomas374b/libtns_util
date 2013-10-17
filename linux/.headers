@@ -3,18 +3,23 @@ HDRS = \
 	copyright.h	\
 	daemonic.h	\
 	ftape.h	\
+	getreginfo.h	\
 	mkopts.h	\
 	netutils.h	\
 	porting.h	\
 	readln.h	\
 	t_floating_avg.h	\
+	t_freezing_avg.h	\
 	t_Glimpselog.h	\
 	timer.h	\
 	t_LogBuffer.h	\
+	tns_util.h	\
 	t_peer.h	\
+	t_protected_avg.h	\
 	t_ringbuf.h	\
 	t_Set.h	\
 	t_sorter.h	\
 	t_versioninfo.h	\
+	t_window_stack.h	\
 	utils.h	\
 	win32_export.h		

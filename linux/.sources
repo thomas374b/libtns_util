@@ -5,6 +5,7 @@ SRCS = \
 	readln.cpp	\
 	t_Set.cpp	\
 	t_floating_avg.cpp	\
+	t_window_stack.cpp	\
 	t_ringbuf.cpp	\
 	t_sorter.cpp	\
 	t_versioninfo.cpp	\
