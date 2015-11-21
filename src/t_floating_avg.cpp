@@ -108,12 +108,12 @@ bool t_NamedObj::Scanf(char *buf)
 	TRACE("%s::Scanf(%s)\n",getClassName(),getName());
 #endif
 	if (buf == NULL) {
-		EPRINTF1("buffer is NULL on %s/%s::Scanf()\n",getName(),getClassName());
+		EPRINTF1("buffer is NULL on %s/%s::Scanf()",getName(),getClassName());
 		return false;
 	}		
 	int sl = strlen(buf);
 	if (sl < 3) {
-		EPRINTF1("buffer too short on %s/%s::Scanf()\n",getName(),getClassName());
+		EPRINTF1("buffer too short on %s/%s::Scanf()",getName(),getClassName());
 		return false;
 	}
 	char *c_end = &buf[sl];
@@ -122,7 +122,7 @@ bool t_NamedObj::Scanf(char *buf)
 	TRACE("processing %s/%s\n",getName(),getClassName());
 #endif
 	if (Sptr == NULL) {
-		EPRINTF0("Sptr is NULL\n");
+		EPRINTF0("Sptr is NULL");
 		return false;
 	}
 	

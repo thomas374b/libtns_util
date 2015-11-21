@@ -26,7 +26,6 @@
 
 #include "tns_util/porting.h"
 #include "tns_util/daemonic.h"
-
 #include "tns_util/t_freezing_avg.h"
 
 

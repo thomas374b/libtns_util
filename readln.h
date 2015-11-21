@@ -43,7 +43,8 @@ public:
 	virtual int lowLevelRead(char *buf, int size);
 		// blocking version
 	
-	virtual ~t_buffer() {};
+	virtual ~t_buffer() {
+	}; 
 private:
 	fileHandle fd;
 	int bufsize;

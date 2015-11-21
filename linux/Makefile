@@ -66,8 +66,17 @@ ifeq (_$(MACHINE)_,_etrax100lx_)
 			CROSS = cris-axis-linux-gnu-
 else
 ifeq (_$(MACHINE)_,_armv7_)
+	ifeq (_$(shell uname -m)_,_armv7l_) 
+		# compiling on banana-pi directly
+	else
 				# Kobo Mini
-				CROSS = arm-linux-gnueabihf-
+				# small executables, no float/double, knows -march=armv7
+				# CROSS = arm-linux-gnueabihf-				
+				# for kobo kernel
+				CROSS = arm-none-linux-gnueabi-
+				# supports -msoft-float, denies -march=armv7
+				DEFINES += -D__LINUX_ARM_ARCH__=7
+	endif				
 else
 ifeq (_$(MACHINE)_,_armv5_)
 					# Olinuxino iMX233 for kernels  
@@ -80,11 +89,14 @@ endif
 endif	
 endif	
 
-CC	= $(CROSS)gcc
+#_GCC = g++
+_GCC = gcc
+
+CC	= $(CROSS)$(_GCC)
 LD	= $(CROSS)ld
 AR	= $(CROSS)ar
 STRIP = $(CROSS)strip
-CC_LINK	= $(CROSS)gcc
+CC_LINK	= $(CROSS)$(_GCC)
 CC_VERSION = $(shell $(CC) -dumpversion)
 
 SBIN_TARGET = $(shell test -f man/man8/$(TARGET).8 && echo "s")
@@ -225,7 +237,12 @@ ifeq (_$(LIBC)_,_5_)
 			OPTS += -m486
 				DEFS += -DLIBC$(LIBC)
 else
+ifeq (_$(CC)_,_arm-none-linux-gnueabi-$(_GCC)_)
+				# -march=armv7 not supported
+				#       OPTS += -mno-thumb
+else
 				OPTS += -march=$(MACHINE) 
+endif				
 endif	
 endif	
 endif
@@ -419,8 +436,8 @@ MAKE_T=$(LIBNAME)
 
 
 ifeq ($(MAKE_T),$(KMOD))
-	INCLDIR = -I/usr/src/linux-$(KERNEL_VERSION)/include
-	CFLAGS = -O6 -DMODULE -D__KERNEL__ -Wstrict-prototypes -fomit-frame-pointer $(DEFINES) $(WARN) $(DEBUG_FLAGS) $(EXTRA_INC)
+	INCLDIR = -I/usr/src/linux-$(KERNEL_VERSION)-$(MACHINE)/include
+	CFLAGS = -O6 -D__$(MACHINE)__ -D__$(DEVICE)__ -DMODULE -D__KERNEL__ -Wstrict-prototypes -fomit-frame-pointer $(DEFINES) $(WARN) $(DEBUG_FLAGS) $(EXTRA_INC)
 	TARGETNAME = $(TARGET)
 	UMA = $(UNAME)-$(MACHINE)-$(KERNEL_VERSION)
 	OPA = built/$(UMA)
@@ -512,7 +529,7 @@ $(OPA)/%.dep:
 endif
 	@echo "refreshing dependency $@" 	
 	@$(CC) $(CFLAGS) -DMODNAME=\"$*\" $(INCLDIR) -M $*  		|\
-	sed -e "s/^.*\.o\:\ /built\/$(UMA)\/&/g;s/\: $*/& built\/.versions/g"  	>$@
+	sed -e "s/^.*\.o\:\ /built\/$(UMA)\/&/g"  	>$@
 	rm -f built/.versions
 
 $(OPA)/%.o: 
@@ -855,10 +872,17 @@ srcs: .rmsrcs $(OPA)/.objects .headers forcedep
 	egrep -v '^//' *.[cChH] *.cc *.cpp 2>/dev/null	|\
 	egrep '\#define [A-Z][A-Z_]*[ \	]*(\"[0-9A-Za-z_/\\]*\"|[0-9][0-9]*[ ]*)$$' |\
 	awk '{for (i=2; i<=NF; i++) { \
-	if (i==2) printf("// DEFINES += -D%s=",$$i);	\
+	if (i==2) printf("# DEFINES += -D%s=",$$i);	\
 	else printf("%s",$$i); } printf("\n");}' 	|\
 	sed -e 's/\"/\\&/g' >>.defines )
 
+
+HAVESVN = $(shell if svn log >/dev/null 2>&1 && test -d .svn; then echo -n yes; else echo -n no; fi)
+SVNENTRIES =
+
+ifeq (_$(HAVESVN)_,_yes_)
+	SVNENTRIES = .svn/entries 
+endif
 
 ## dependencies follow
 
@@ -891,7 +915,7 @@ built/.versions:
 	@mkdir -p built ; touch built/.versions 
 else	
 SRCREGEX = $(shell echo `cat .sources `|sed 's/\\//g;s/^.*=[ ]*//g;s/  /|/g')
-built/.versions: .sources .headers 
+built/.versions: $(SVNENTRIES) .sources .headers
 	@mkdir -p built ; \
 	(echo creating new ls_fulltime version list >&2 ; \
 	    for i in $(SRCS)		; \
