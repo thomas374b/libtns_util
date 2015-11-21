@@ -203,19 +203,18 @@ bool t_Range::Update(double d)
 	if (d < min) {
 		min = d;
 		changed = -1; 
-	}
-	size = max - min; 
+	}	
+	size = max - min;
 	if (size == 0.0) {
 		size = 1.0;
-	}	
-	
+	}
 	if (changed != 0) {
 		if (!freezeBoundaries) {
 			bias = - ((max + min) / 2.0);
 			fullScale = size / 2.0;
-		}	    
+		}
 #ifdef DEBUG_ALL
-		fprintf(stderr,"t_Range::Update(%g) %g<x<%g\t",d,min,max); 
+		fprintf(stderr,"t_Range::Update(%g) %g<x<%g, c:%d\n", d, min, max, changed, bias, fullScale);
 #endif
 	}
 	return (changed != 0);
@@ -315,8 +314,8 @@ double t_laverage::updateGradient(double v)
 
 void t_laverage::Add(double v)
 {
-	AvgV += updateGradient(v);
 	t_Range::Update(v);
+	AvgV += updateGradient(v);
 }
 
 double t_laverage::Range(void)
@@ -390,7 +389,7 @@ void t_average::Add(double v)
 		AvgV = t_freezing_avg::Value();
 	}
 
-	if (calibration) {
+	if (autoCalibration) {
 	    Update(AvgV);	// expand ranges slowly
 	} else {
 	    Update(v);		// quickly expand ranges
@@ -400,15 +399,30 @@ void t_average::Add(double v)
 void t_average::setCalibrationLen(double l)
 {
 	alen = l;
-	calibration = true;
+	autoCalibration = true;
 	Reset();
 }
+
+void t_average::calibrate(double min, double max)
+{
+	Reset();
+	autoCalibration = false;
+	freezeBoundaries = false;
+	Update(min);
+	Update(max);
+	freezeBoundaries = true;
+	AvgV = (max+min);
+}
+
+
 
 void t_average::finishCalibration(void) 
 {
 	alen = windowLength;
-	calibration = false;
-	freezeBoundaries = true;	
+	autoCalibration = false;
+	freezeBoundaries = true;
+
+	fprintf(stderr,"fullScale: %f\n", fullScale);
 }
 
 void t_average::Init(double l)

@@ -10,6 +10,7 @@ HDRS = \
 	readln.h	\
 	t_floating_avg.h	\
 	t_freezing_avg.h	\
+	t_int_average.h		\
 	t_Glimpselog.h	\
 	timer.h	\
 	t_LogBuffer.h	\

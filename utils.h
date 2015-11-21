@@ -65,7 +65,7 @@ TNS_UTIL_API char *sprint_kM(double d, char *buf);
 TNS_UTIL_API char *strip_slash(char *fullpath);		// basename()
 
 //extern void ErrorMsg(const char st[]);
-#define ErrorMsg(x)	perror(x)
+#define ErrorMsg(x, y)		{fprintf(stderr,"%s: %s\n", x, strerror(y)); }
 //extern void ErrorMsg(const char st[],int n);
 
 #ifdef AIX

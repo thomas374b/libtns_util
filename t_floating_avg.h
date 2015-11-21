@@ -43,7 +43,8 @@ public:
 	
 	void SetSubPointer(t_NamedObj **);
 	char *getName(void) { return ItsName; };
-	void SetName(const char *n);
+
+	virtual void SetName(const char *n);
 	
 	virtual bool Save(fileHandle fd);
 	virtual bool Load(fileHandle fd);
@@ -130,11 +131,11 @@ public:
 class t_average : public t_laverage, t_freezing_avg {
 private:
 	double windowLength;
-	bool calibration;
+	bool autoCalibration;
 public:
 
 	t_average() {
-	    calibration = false;
+	    autoCalibration = false;
 	    windowLength = 1.0;
 	};
 
@@ -150,6 +151,7 @@ public:
 
 	virtual void Add(double v);	
 	double Filtered(double fullScale);
+	void calibrate(double min, double max);
 	void setCalibrationLen(double windowLength);
 	void finishCalibration(void);
 };

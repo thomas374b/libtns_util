@@ -38,6 +38,16 @@ TNS_UTIL_API double sunSet(double height, time_t now);
 TNS_UTIL_API bool atDayTime(double height, time_t now);
 TNS_UTIL_API t_timestruct *getSunRise(void);
 TNS_UTIL_API t_timestruct *getSunSet(void);
+TNS_UTIL_API double Zeitgleichung(double T);
+TNS_UTIL_API double halberTag(double T, double hight, double Breite);
+TNS_UTIL_API double Deklination(double T);
+
+
+TNS_UTIL_API double AP_power(double x, int n);
+TNS_UTIL_API double AP_fak(int x);
+TNS_UTIL_API double AP_sin(double x, int precision);
+TNS_UTIL_API double AP_cos(double x, int precision);
+TNS_UTIL_API double AP_arccos(double x, int precision);
 
 extern int _tnsutil_daylightSaving;
 

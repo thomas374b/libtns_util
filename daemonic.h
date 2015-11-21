@@ -90,6 +90,7 @@ typedef void (*sighandler_t)(int);
 			#define EPRINTF0(fmt)				{char z[4096];_snprintf(z,3072,fmt);do_logging(TARGETNAME,z);}
 			#define EPRINTF(fmt, args)			{char z[4096];_snprintf(z,3072,fmt,args);do_logging(TARGETNAME,z);}
 			#define EPRINTF1(fmt, arg0, arg1)	{char z[4096];_snprintf(z,3072,fmt,arg0, arg1);do_logging(TARGETNAME,z);}
+
 //			#define EPRINTF2(fmt, arg0, arg1, arg2)
 			#define EPRINTF4(fmt, arg0, arg1, arg2, arg3, arg4)
 			#define EPRINTF8(fmt, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)

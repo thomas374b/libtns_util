@@ -9,6 +9,7 @@ SRCS = \
 	t_ringbuf.cpp	\
 	t_sorter.cpp	\
 	t_versioninfo.cpp	\
+	t_int_average.cpp	\
 	t_Glimpselog.cpp \
 	astropak.cpp \
 	timer.cpp	\

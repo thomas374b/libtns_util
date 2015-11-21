@@ -69,7 +69,7 @@
 #else
 	#include "tns_util/win32_export.h"
 
-	// #define DWORD		int		// clashes with DWORD declaration in smalogd
+	#define DWORD		int		// clashes with DWORD declaration in smalogd
 	#define StringPtr	char*
 	#define BOOL		bool	
 
