@@ -16,4 +16,5 @@ SRCS = \
 	mkopts.cpp	\
 	netutils.cpp	\
 	t_LogBuffer.cpp \
-	t_peer.cpp	
+	t_peer.cpp	\
+	cLinuxEvent.cpp
