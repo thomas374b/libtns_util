@@ -30,6 +30,10 @@
 cLinuxEvent::cLinuxEvent(const char *dev)
 {
 	fd = openFd(dev, O_RDONLY);
+	if (fd < 0) {
+		EPRINTF("not initialized: %s", strerror(errno));
+		return;
+	}
 	fcntl(fd, F_SETFL, O_NONBLOCK|O_NDELAY);
 /*
 	for (int i=0; i<N_SCAN_CODES; i++) {
@@ -40,7 +44,9 @@ cLinuxEvent::cLinuxEvent(const char *dev)
 
 cLinuxEvent::~cLinuxEvent()
 {
-	close(fd);
+	if (fd >=0) {
+		close(fd);
+	}
 }
 
 int cLinuxEvent::getFD(void)
@@ -55,6 +61,9 @@ int cLinuxEvent::getFD(void)
  */
 char *cLinuxEvent::get(char *buffer, short len)
 {
+	if (fd < 0) {
+		return NULL;
+	}
 	if (!FD_Ready(fd)) {
 //		EPRINTF("not yet ready");
 		return NULL;
@@ -85,6 +94,9 @@ char *cLinuxEvent::get(char *buffer, short len)
 
 __u16 *cLinuxEvent::getFiltered(void)
 {
+	if (fd < 0) {
+		return NULL;
+	}
 	if (!FD_Ready(fd)) {
 		return NULL;
 	}
