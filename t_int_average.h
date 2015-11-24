@@ -33,6 +33,8 @@ public:
 	double Filtered(double scale);
 	char *Printf(char *b);
 
+	void adjustMaxMin(int v);
+	void minMaxReset();
 };
 
 #endif /* TINTAVERAGE_H_ */

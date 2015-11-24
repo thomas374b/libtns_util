@@ -26,12 +26,27 @@ t_int_average::t_int_average(int len)
 	}
 	idx = 0;
 	cnt = 0;
-	min =  1000000000;
-	max = -1000000000;
+	minMaxReset();
 	sum = 0;
 	gradSum = 0;
 
 	fprintf(stderr,"len:%d  mod:0x%02x  pow:%d\n", length, mod, pow );
+}
+
+void t_int_average::minMaxReset()
+{
+	min =  2147483647;
+	max = -2147483647;
+}
+
+void t_int_average::adjustMaxMin(int v)
+{
+	if (v > max) {
+		max = v;
+	}
+	if (v < min) {
+		min = v;
+	}
 }
 
 void t_int_average::add(int v)
@@ -54,12 +69,7 @@ void t_int_average::add(int v)
 	data[idx] = v;
 	sum += data[idx];		// neuer rein
 
-	if (v > max) {
-		max = v;
-	}
-	if (v < min) {
-		min = v;
-	}
+	adjustMaxMin(v);
 
 	idx++;
 	idx &= mod;
@@ -98,10 +108,14 @@ int t_int_average::range()
 	return max -min;
 }
 
+/**
+ * remove highest and lowest value from average calculation
+ */
 int t_int_average::cooked()
 {
-	int p = -1000000000;
-	int q =  1000000000;
+	int p = -2147483647;
+	int q = 2147483647;
+	minMaxReset();
 	unsigned short qi = 0;
 	unsigned short pi = 0;
 
@@ -124,6 +138,7 @@ int t_int_average::cooked()
 		if (i == pi) {
 			continue;
 		}
+		adjustMaxMin(data[i]);
 		S += data[i];
 		k++;
 	}
