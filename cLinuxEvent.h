@@ -37,6 +37,7 @@ public:
 
 	bool addScanCode(t_scancode *);
 	void addCursorButtons();
+	void addJoystickButtons();
 };
 
 #endif /* CLINUXEVENT_H_ */

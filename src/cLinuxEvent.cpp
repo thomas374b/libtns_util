@@ -27,6 +27,13 @@
 #endif
 #include "tns_util/copyright.h"
 
+/*
+ *
+ * /sys/class/input/event%d/device/capabilities/key
+ * /sys/class/input/event%d/device/name
+ *
+ */
+
 cLinuxEvent::cLinuxEvent(const char *dev)
 {
 	fd = openFd(dev, O_RDONLY);
