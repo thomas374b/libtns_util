@@ -63,10 +63,11 @@ private:
 	int changed;
 	double last;
 protected:
-	double fullScale;
 	bool freezeBoundaries;	
 public:	
 	double bias;
+	double fullScale;
+
 	t_Range() {
 		changed = 0;
 		last = 1.0;
@@ -75,6 +76,7 @@ public:
 		max = -100000000000000.0;
 		min =  100000000000000.0;
 		size = 0.0;
+		fullScale = 1.0;
 	};
 	double max, min, size;
 	void Reset(void);

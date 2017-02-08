@@ -336,7 +336,7 @@ char *t_NamedAverage::Printf(char *buf)
 {
 	if (buf != NULL) {
 //		char st[256];
-		sprintf(buf,"{avgv:%g, len:%g, min:%g, max:%g}%s",AvgV,alen,min,max,getName());
+		sprintf(buf,"{avgv:%g, len:%g, min:%g, max:%g}%s", AvgV, alen, min, max, getName());
 	}		
 	return buf;
 }
@@ -411,7 +411,7 @@ void t_average::calibrate(double min, double max)
 	Update(min);
 	Update(max);
 	freezeBoundaries = true;
-	AvgV = (max+min);
+	AvgV = (max+min)/2;
 }
 
 

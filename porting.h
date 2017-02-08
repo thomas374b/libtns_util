@@ -68,11 +68,13 @@
 	
 #else
 	#include "tns_util/win32_export.h"
-
+#ifndef YASDI_HAS_DWORD
 	#define DWORD		int		// clashes with DWORD declaration in smalogd
+#endif	
 	#define StringPtr	char*
+#ifndef BOOL
 	#define BOOL		bool	
-
+#endif
 	/* we use standard Unix open/read/write with integer file descriptors */
 	#define fileHandle				int
 	

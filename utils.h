@@ -47,7 +47,7 @@ TNS_UTIL_API int FD_Ready(unsigned int fd);
 TNS_UTIL_API int FD_ReadyTo(unsigned int fd, int to);
 TNS_UTIL_API int FD_Writeable(unsigned int fd);
 
-TNS_UTIL_API bool fexist(char *s);
+TNS_UTIL_API bool fexist(char *s);			// return true if file "s" exists
 TNS_UTIL_API long int filelen(char *s);	// return -1 if file doesnt exist
 TNS_UTIL_API char test_dir(char *s);		// true if s is a directory
 TNS_UTIL_API char strnrcmp(char *s1, char *s2, unsigned int len);

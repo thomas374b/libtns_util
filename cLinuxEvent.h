@@ -20,7 +20,9 @@ typedef struct {
 #define  N_SCAN_CODES	16
 #endif
 
-
+/**
+ * intended to work with keyboards and joystick-buttons
+ */
 class cLinuxEvent {
 private:
 	int fd;

@@ -60,7 +60,7 @@ int __min(int a, int b)
 }       
 #endif
 
-char unit_prefix[8] = " kMGTE";
+char unit_prefix[8] = " kMGTPE";
 
 char *sprint_kM(double d, char *buf)	// print a number in %3.1f format with proper unit prefixes to stdout
 {
