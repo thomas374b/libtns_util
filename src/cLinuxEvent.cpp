@@ -38,7 +38,7 @@ cLinuxEvent::cLinuxEvent(const char *dev)
 {
 	fd = openFd(dev, O_RDONLY);
 	if (fd < 0) {
-		EPRINTF("not initialized: %s", strerror(errno));
+		EPRINTF("%s not initialized: %s", dev, strerror(errno));
 		return;
 	}
 	fcntl(fd, F_SETFL, O_NONBLOCK|O_NDELAY);
@@ -99,7 +99,7 @@ char *cLinuxEvent::get(char *buffer, short len)
 	return buffer;
 }
 
-__u16 *cLinuxEvent::getFiltered(void)
+__u16 *cLinuxEvent::getFiltered(int to)
 {
 	if (fd < 0) {
 		return NULL;
@@ -107,7 +107,7 @@ __u16 *cLinuxEvent::getFiltered(void)
 	if (!FD_Ready(fd)) {
 		return NULL;
 	}
-	while(FD_Ready(fd)) {
+	while(FD_ReadyTo(fd, to)) {
 		input_event scan[2];
 		int got = read(fd, (char*)&scan, sizeof(input_event));
 		if (got == 0) {
@@ -144,6 +144,30 @@ void cLinuxEvent::addCursorButtons()
 			{EV_KEY, KEY_UP,    SYN_REPORT},
 			{EV_KEY, KEY_LEFT,  SYN_REPORT},
 			{EV_KEY, KEY_RIGHT, SYN_REPORT}
+	};
+
+	for (unsigned int i=0; i<sizeof(cBtns)/sizeof(t_scancode); i++) {
+		addScanCode(&cBtns[i]);
+	}
+}
+
+void cLinuxEvent::addJoystickButtons()
+{
+	t_scancode cBtns[] = {
+			// Cougar flightstick
+			{EV_KEY, 288,  SYN_REPORT},	// fire
+			{EV_KEY, 289,  SYN_REPORT},	// 2
+			{EV_KEY, 290,  SYN_REPORT},	// 3
+			{EV_KEY, 291,  SYN_REPORT},	// 4
+			{EV_KEY, 292,  SYN_REPORT},	// 5
+			{EV_KEY, 293,  SYN_REPORT},	// 6
+
+			{EV_KEY, 294,  SYN_REPORT},	// 7
+			{EV_KEY, 295,  SYN_REPORT},	// 8
+			{EV_KEY, 296,  SYN_REPORT},	// 9
+			{EV_KEY, 297,  SYN_REPORT},	// 10
+			{EV_KEY, 298,  SYN_REPORT},	// 11
+			{EV_KEY, 299,  SYN_REPORT},	// 12
 	};
 
 	for (unsigned int i=0; i<sizeof(cBtns)/sizeof(t_scancode); i++) {

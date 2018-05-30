@@ -35,7 +35,7 @@ public:
 	int getFD(void); // support select polling from other
 
 	char *get(char *buffer, short len);
-	__u16 *getFiltered(void);
+	__u16 *getFiltered(int to);
 
 	bool addScanCode(t_scancode *);
 	void addCursorButtons();

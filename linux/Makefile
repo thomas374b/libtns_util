@@ -30,7 +30,7 @@ CODE	= -fpic # -fpcc-struct-return
 
 MAJOR = 0
 MINOR = 9
-PATCHLEVEL = 26
+PATCHLEVEL = 27
 VERSION = $(MAJOR).$(MINOR).$(PATCHLEVEL)
 
 ifeq (_${MK_DEBPKG}_,__)
@@ -877,7 +877,8 @@ srcs: .rmsrcs $(OPA)/.objects .headers forcedep
 	sed -e 's/\"/\\&/g' >>.defines )
 
 
-HAVESVN = $(shell if svn log >/dev/null 2>&1 && test -d .svn; then echo -n yes; else echo -n no; fi)
+#HAVESVN = $(shell if svn log >/dev/null 2>&1 && test -d .svn; then echo -n yes; else echo -n no; fi)
+HAVESVN = $(shell test -d .svn/ && echo -n yes || echo -n no)
 SVNENTRIES =
 
 ifeq (_$(HAVESVN)_,_yes_)

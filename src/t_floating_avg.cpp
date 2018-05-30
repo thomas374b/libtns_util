@@ -367,7 +367,7 @@ bool t_NamedAverage::Scanf(char *st)
 void t_NamedSensorAverage::Add(double v, bool bWarmup)
 {
 	if (bWarmup) {
-		AvgV = v;		// directly set average
+		AvgV = v;		// directly set average		// TODO: review this, use freezing-AVG instead
 	} else {
 		t_NamedAverage::Add(v);	// calculate average, update range
 	}

@@ -69,7 +69,9 @@
 #else
 	#include "tns_util/win32_export.h"
 #ifndef YASDI_HAS_DWORD
-	#define DWORD		int		// clashes with DWORD declaration in smalogd
+	// clashes with DWORD declaration in smalogd  unsigned long
+	#define DWORD 		unsigned long
+
 #endif	
 	#define StringPtr	char*
 #ifndef BOOL
