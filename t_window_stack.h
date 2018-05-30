@@ -25,9 +25,10 @@ public:
 		len = 0;
 	};
 
-	int len,idx,cnt;
+
+	int len,idx,cnt;	// TODO: cnt already protected member
 	double *V;
-	double Sum;
+	double Sum;			// TODO: Sum already protected member
 
 	void Init(int length);
 

@@ -131,7 +131,7 @@ public:
 //
 class t_average : public t_laverage, t_freezing_avg {
 private:
-	double windowLength;
+	double windowLength;	// TODO: review against "alen" member
 	bool autoCalibration;
 public:
 
@@ -149,6 +149,8 @@ public:
 			windowLength = alen;
 		}
 	};
+
+	bool _frozen(void);	// return true if more values are than window-length values have been already added
 
 	virtual void Add(double v);	
 	double Filtered(double fullScale);
@@ -172,7 +174,7 @@ public:
 class t_NamedSensorAverage : public t_NamedAverage {
 public:	
 	virtual const char *getClassName(void) { return "t_NamedSensorAverage"; };
-	virtual void Add(double v, bool bWarmup);	
+	virtual void Add(double v, bool bWarmup);
 };
 
 

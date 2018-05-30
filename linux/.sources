@@ -7,9 +7,11 @@ SRCS = \
 	t_floating_avg.cpp	\
 	t_window_stack.cpp	\
 	t_ringbuf.cpp	\
+	stRingBuf.cpp	\
 	t_sorter.cpp	\
 	t_versioninfo.cpp	\
 	t_int_average.cpp	\
+	t_long_average.cpp	\
 	t_Glimpselog.cpp \
 	astropak.cpp \
 	timer.cpp	\
@@ -18,3 +20,4 @@ SRCS = \
 	t_LogBuffer.cpp \
 	t_peer.cpp	\
 	cLinuxEvent.cpp
+

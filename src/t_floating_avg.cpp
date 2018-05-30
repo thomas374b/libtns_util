@@ -378,11 +378,16 @@ void t_NamedSensorAverage::Add(double v, bool bWarmup)
 //		t_average
 //
 //_______________________________________________
+bool t_average::_frozen(void)
+{
+	return (cnt > windowLength);
+}
+
 void t_average::Add(double v)
 {
 	updateGradient(v);
 
-	if (cnt > windowLength) {
+	if (_frozen()) {
 		AvgV += gradient;
 	} else {
 		t_freezing_avg::Add(v);
