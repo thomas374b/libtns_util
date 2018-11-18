@@ -30,7 +30,7 @@ CODE	= -fpic # -fpcc-struct-return
 
 MAJOR = 0
 MINOR = 9
-PATCHLEVEL = 27
+PATCHLEVEL = 28
 VERSION = $(MAJOR).$(MINOR).$(PATCHLEVEL)
 
 ifeq (_${MK_DEBPKG}_,__)
@@ -192,14 +192,24 @@ else
 ifeq (_$(MACHINE)_,_etrax100lx_)
 				CODEPREFIX=/mnt/SD/etrax
 else
+ifeq (_$(MACHINE)_,_armv7_)
+ifeq (_$(DEVICE)_,_kobomini_)
+					CODEPREFIX=/opt/Kobo
+else
+# enter prefix for new armv7 device here
+endif
+else
+# enter prefix for new machine here
 				CODEPREFIX=$(PREFIX)/$(UMA)
 endif
+endif	
 endif	
 endif	
 endif	
 
 UISRC = 
 MOCSRC = 
+RCCSRC = 
 
 ifeq ($(WITH_QTOPIA),y)
 # include qtopia1.mk
@@ -422,7 +432,7 @@ include .sources
 include .defines
 DEFS += $(DEFINES)
 
-CFLAGS	= $(OPTS) $(WARN) $(DEFS) $(DEBUG_FLAGS) 
+CFLAGS	= $(CODE) $(OPTS) $(WARN) $(DEFS) $(DEBUG_FLAGS) 
 
 BINTARGET = $(TARGET)
 ifeq (_$(UNAME)_,_cygwin_)
@@ -448,7 +458,6 @@ else
 	OPA = built/$(UMA)
 	OPA_M = $(OPA)
 ifeq ($(MAKE_T),$(LIBNAME))
-	CFLAGS += -I. $(CODE)
 	TARGETNAME = $(SONAME)
 	MANSUFFIX = 3
 else
@@ -501,10 +510,8 @@ endif
 endif
 
 ifeq ($(MAKE_T),$(LIBNAME))
-	ifeq (_$(MACHINE)_,_etrax100lx_)
-		# the cris architecture requires the -fPIC flag for libraries
 		CFLAGS += -fPIC
-	endif
+	CFLAGS += -I.
 endif
 
 all: $(DEPEND) $(O_MAKE_T) 
@@ -524,6 +531,7 @@ help:
 
 ifeq ($(WITH_QTOPIA),y)
 # include qtopia2.mk
+$(OPA)/%.dep: $(UMAUIC)/.depend
 else
 $(OPA)/%.dep: 
 endif
@@ -594,6 +602,14 @@ static_lib: cflag_info $(OBJS)
 $(O_TARGET): cflag_info $(OBJS)
 	$(CC) $(LINK_OPTS) $(LIBDIR) -o $(O_TARGET) $(OBJS) $(LIBS)	
 
+ifeq (_$(RCP)_,_cp_)
+$(RCPBIN):
+	mkdir -p $(RCPBIN)
+	
+$(RCPLIB):
+	mkdir -p $(RCPLIB)
+endif
+
 $(OPA)/$(TARGET).pc:
 	@(echo prefix=$(PREFIX);\
 	echo exec_prefix=$(PREFIX);\
@@ -617,15 +633,15 @@ ifeq (_$(DYNLINK)_,_0_)
 install_lib: install_pkg_conf $(OPA)/lib$(TARGET).a $(INST_PREFIX)/lib$(GDBPREFIX)
 	$(INSTALL) -m 644 $(OPA)/lib$(TARGET).a $(INST_PREFIX)/lib$(GDBPREFIX)	
 else
-install_lib: install_pkg_conf $(O_LIBNAME) $(INST_PREFIX)/lib$(GDBPREFIX)
+install_lib: install_pkg_conf $(O_LIBNAME) $(INST_PREFIX)/lib$(GDBPREFIX) $(RCPLIB)
 ifeq (_$(DEBUG_FLAGS)_,__)	
 	$(STRIP) --strip-unneeded --discard-locals $(O_LIBNAME) 
 endif
 	@if test -r $(OPA)/lib$(TARGET).a ; then $(INSTALL) -m 644 $(OPA)/lib$(TARGET).a $(INST_PREFIX)/lib$(GDBPREFIX) ; fi
 	$(INSTALL) -m 755 $(O_LIBNAME) $(INST_PREFIX)/lib$(GDBPREFIX)
 ifneq (_$(CROSS)_,__)
-ifneq (_$(SCP)_,__)
-	$(SCP) $(O_LIBNAME) $(REMOTE):$(INST_PREFIX)/lib$(GDBPREFIX)/
+ifneq (_$(RCP)_,__)
+	$(RCP) $(O_LIBNAME) $(REMOTE_PREFIX)/lib$(GDBPREFIX)/
 endif	
 endif	
 ifeq (_${LOGNAME}_,_root_)
@@ -644,6 +660,12 @@ else
 	rm -f $(DEVLIBSYM) $(SONAME);\
 	ln -s $(LIBNAME) $(SONAME);\
 	ln -s $(LIBNAME) $(DEVLIBSYM) )
+ifeq (_$(RCP)_,_cp_)
+	(cd $(REMOTE_PREFIX)/lib$(GDBPREFIX);\
+	rm -f $(DEVLIBSYM) $(SONAME);\
+	ln -s $(LIBNAME) $(SONAME);\
+	ln -s $(LIBNAME) $(DEVLIBSYM) )
+endif
 endif
 endif
 
@@ -675,11 +697,11 @@ else
 	@echo must be root to write dependancies
 endif
 else
-install_bin: compact  $(INST_PREFIX)/$(BINDIR_)    # 
+install_bin: compact  $(INST_PREFIX)/$(BINDIR_) $(RCPBIN)  # 
 	$(INSTALL) -m 755 $(O_TARGET) $(INST_PREFIX)/$(BINDIR_)
 ifneq (_$(CROSS)_,__)
-ifneq (_$(SCP)_,__)
-	$(SCP) $(O_TARGET) $(REMOTE):$(INST_PREFIX)/$(BINDIR_)
+ifneq (_$(RCP)_,__)
+	$(RCP) $(O_TARGET) $(REMOTE_PREFIX)/$(BINDIR_)
 endif	
 endif			
 endif
@@ -877,8 +899,7 @@ srcs: .rmsrcs $(OPA)/.objects .headers forcedep
 	sed -e 's/\"/\\&/g' >>.defines )
 
 
-#HAVESVN = $(shell if svn log >/dev/null 2>&1 && test -d .svn; then echo -n yes; else echo -n no; fi)
-HAVESVN = $(shell test -d .svn/ && echo -n yes || echo -n no)
+HAVESVN = $(shell if svn log >/dev/null 2>&1 && test -d .svn; then echo -n yes; else echo -n no; fi)
 SVNENTRIES =
 
 ifeq (_$(HAVESVN)_,_yes_)

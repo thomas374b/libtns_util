@@ -38,6 +38,7 @@ public:
 	bool Init(char *fn, int bs);
 	char *ReadLn(void);				// read until Linefeed
 	long int Pos(void);
+	long int Offs(void);
 	void Done(void);	
 	
 	virtual int lowLevelRead(char *buf, int size);

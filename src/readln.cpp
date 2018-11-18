@@ -68,10 +68,9 @@ bool t_buffer::Init(char *fn, int bs)
 		lseekFd(fd,0,SEEK_SET);
 	}	
 	bufsize = bs;
-	buffer = new char[(bufsize*2)+1024];
+	buffer = new char[bufsize+4096];
 
-	for (int i=0; i<(bufsize*2)+512; i++)
-		buffer[i] = '\0';
+	memset(buffer, 0, bufsize+4096);
 
 	return true;
 }	
@@ -106,6 +105,10 @@ long int t_buffer::Pos(void)
 	return lseekFd(fd,0,SEEK_CUR);
 }
 
+long int t_buffer::Offs(void)
+{
+	return offs;
+}
 
 
 int t_buffer::lowLevelRead(char *_b, int _s)

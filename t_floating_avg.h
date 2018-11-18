@@ -150,7 +150,7 @@ public:
 		}
 	};
 
-	bool _frozen(void);	// return true if more values are than window-length values have been already added
+	bool _frozen(void);	// return true if more values than window-length values have been already added
 
 	virtual void Add(double v);	
 	double Filtered(double fullScale);
