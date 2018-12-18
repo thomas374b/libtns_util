@@ -6,10 +6,11 @@
  */
 
 
+#include <math.h>
+
 #include "tns_util/t_window_stack.h"
 #include "tns_util/daemonic.h"
 
-#include <math.h>
 
 void t_window_stack::Init(int l)
 {
