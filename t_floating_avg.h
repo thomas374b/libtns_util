@@ -28,6 +28,8 @@
 #include "tns_util/daemonic.h"
 #include "tns_util/t_freezing_avg.h"
 
+extern char *shortFract(double d, char *buf);
+extern double fraction(double d);
 
 //_________________________________________________________
 //
