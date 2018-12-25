@@ -272,7 +272,7 @@ char *t_NamedRange::Printf(char *buf)
 {
 	if (buf != NULL) {
 //		char st[256];
-		sprintf(buf,"{min:%g, max:%g}%s",min,max,getName());
+		sprintf(buf,"{min:%f, max:%f}%s",min,max,getName());
 	}		
 	return buf;
 }
@@ -330,13 +330,38 @@ void t_laverage::Reset(void)
 }
 
 
+double fraction(double d)
+{
+	return (d - floor(d));
+}
+
+char *shortFract(double d, char *buf)
+{
+	if (buf == NULL) {
+		return NULL;	// bonk the caller, not me
+	}
+	if (fraction(d) == 0.0) {
+		sprintf(buf,"%.0f", d);
+	} else {
+		sprintf(buf,"%f",d);
+		int n = strlen(buf)-1;
+		while ((buf[n] == '0') && (buf[n] != '.') && (buf[n] != ',') && (n>0)) {
+			buf[n] = '\0';
+			n--;
+		}
+	}
+	return buf;
+}
+
 //_________________________________________________________
 //
 char *t_NamedAverage::Printf(char *buf)
 {
 	if (buf != NULL) {
 //		char st[256];
-		sprintf(buf,"{avgv:%g, len:%g, min:%g, max:%g}%s", AvgV, alen, min, max, getName());
+		char b0[32], b1[32], b2[32], b3[32];
+		sprintf(buf,"{avgv:%s, len:%s, min:%s, max:%s}%s",
+				shortFract(AvgV,b0), shortFract(alen,b1), shortFract(min,b2), shortFract(max,b3), getName());
 	}		
 	return buf;
 }
