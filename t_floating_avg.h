@@ -181,7 +181,6 @@ public:
 	//	virtual void Add(double v, bool bWarmup);
 	//	we dont need this warmup stuff,  anymore
 	virtual bool add(double v);
-
 	double get() { return AvgV; };
 };
 

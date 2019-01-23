@@ -56,6 +56,7 @@ private:
 	long int rd;
 	bool fend;
 	char *buffer;
+	// TODO: insert filename as member
 };
 
 
