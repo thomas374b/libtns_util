@@ -27,25 +27,25 @@
 
 
 #ifndef AUTHOR
-#define AUTHOR "Thomas Pantzer, <Thomas at/@ Pantzer dot/. net>"
+	#define AUTHOR "Thomas Pantzer, <Thomas at/@ Pantzer dot/. net>"
 #endif
 
 #ifndef COMPILER_VERSION
-#ifdef __GNUC__ 
-#define COMPILER_VERSION __VERSION__
-#endif
+	#ifdef __GNUC__
+		#define COMPILER_VERSION __VERSION__
+	#endif
 #endif
 
 #ifndef VERSION
-#define VERSION "0.0.0"
+	#define VERSION "0.0.0"
 #endif
 
 #ifndef BUILDDATE
-#define BUILDDATE "1970/01/01 0:00:00"
+	#define BUILDDATE "1970/01/01 0:00:00"
 #endif
 
 #ifndef REVISION
-#define REVISION	"@@unknown"
+	#define REVISION	"@@unknown"
 #endif
 
 #ifdef MAIN_G
@@ -73,10 +73,25 @@ char compiler_info[] =
 #endif	// SHOW_COMPILER_MOD
 	/* extern char version_string[]; */
 	/* extern char revision_date[]; */
-extern char copyright_info[];
 
-static char copyright_string[] = 
-	MODNAME" v"VERSION", rev. "REVISION", copyright: "AUTHOR"\n\0";
+extern const char copyright_info[];
+
+#ifndef MODNAME
+	#define MODNAME __FILE__
+#endif
+
+/*
+#ifndef EMBEDDED
+	#define DECLARE_COPYRIGHT_INFO(x)	\
+		static const char copyright_info[] = MODNAME" v"VERSION", rev. "REVISION", copyright: "AUTHOR"\n\0"; \
+		extern const char * x##_version() { return copyright_info; }
+	// modname must not contain dots as in _FILE__
+#else
+	#define DECLARE_COPYRIGHT_INFO(x)
+#endif
+
+	ich gebe auf
+*/
 
 
 #endif	// MAIN_G

@@ -16,7 +16,11 @@
  * 
  * pantec@isys2.informatik.uni-leipzig.de   (Thomas Pantzer) 
  * 
+ *
+ * implements an EWMA with some other fancy features
+ *
  */
+
 
 #undef DEBUG	// define this if assumed to be bugfree
 // #define DEBUG
@@ -33,7 +37,7 @@
 
 
 #ifndef MODNAME
-#define MODNAME __FILE__
+	#define MODNAME __FILE__
 #endif
 #include "tns_util/copyright.h"
 
@@ -182,8 +186,8 @@ void t_Range::Reset(void)
 {
 //	fprintf(stderr,"t_Range::Reset()\n");
 
-	max = -1000000000.0;
-	min = -max;
+	_max = -1000000000.0;
+	_min = -_max;
 	size = 1.0;
 	changed = 0;
 	freezeBoundaries = false;
@@ -196,21 +200,21 @@ bool t_Range::Update(double d)
 	changed = 0;
 	last = d;
 	
-	if (d > max) {
-		max = d;
+	if (d > _max) {
+		_max = d;
 		changed = 1; 
 	}
-	if (d < min) {
-		min = d;
+	if (d < _min) {
+		_min = d;
 		changed = -1; 
 	}	
-	size = max - min;
+	size = _max - _min;
 	if (size == 0.0) {
 		size = 1.0;
 	}
 	if (changed != 0) {
 		if (!freezeBoundaries) {
-			bias = - ((max + min) / 2.0);
+			bias = - ((_max + _min) / 2.0);
 			fullScale = size / 2.0;
 		}
 #ifdef DEBUG_ALL
@@ -233,7 +237,7 @@ bool t_Range::HasChanged(void)
 double t_Range::scaled(void)
 {
 	if (size != 0.0) {
-		return (last - min)/size;
+		return (last - _min)/size;
 	}		
 	return 1.0;
 }
@@ -262,7 +266,7 @@ void t_Range::setFullScale(double fs)
 short t_Range::scaled2(void)
 {
 	if (size != 0.0) {
-		double D = ((last - min)/size) -0.5000;
+		double D = ((last - _min)/size) -0.5000;
 		return (short)(D*32767.0);	
 	}		
 	return 0;
@@ -272,7 +276,7 @@ char *t_NamedRange::Printf(char *buf)
 {
 	if (buf != NULL) {
 //		char st[256];
-		sprintf(buf,"{min:%f, max:%f}%s",min,max,getName());
+		sprintf(buf,"{min:%f, max:%f}%s", _min, _max,getName());
 	}		
 	return buf;
 }
@@ -284,15 +288,15 @@ bool t_NamedRange::Scanf(char *st)
 		return false;
 	}
 #ifdef DEBUG
-	TRACE("%s %s::t_NamedRange::Scanf(%s)\n",getName(),getClassName(),st);
+	TRACE("%s %s::Scanf(%s)\n", getName(), getClassName(), st);
 #endif
 	float i,a;
 	char buf[256];
 	if (sscanf(st,"{min:%g, max:%g}%s",&i,&a,buf) == 3) {
 		if (strcmp(buf,getName()) == 0) {
-			min = i;
-			max = a;
-			size = max - min;
+			_min = i;
+			_max = a;
+			size = _max -_min;
 			return true;
 		}			
 	}
@@ -361,7 +365,7 @@ char *t_NamedAverage::Printf(char *buf)
 //		char st[256];
 		char b0[32], b1[32], b2[32], b3[32];
 		sprintf(buf,"{avgv:%s, len:%s, min:%s, max:%s}%s",
-				shortFract(AvgV,b0), shortFract(alen,b1), shortFract(min,b2), shortFract(max,b3), getName());
+				shortFract(AvgV,b0), shortFract(alen,b1), shortFract(_min,b2), shortFract(_max,b3), getName());
 	}		
 	return buf;
 }
@@ -380,27 +384,29 @@ bool t_NamedAverage::Scanf(char *st)
 		if (strcmp(buf,getName()) == 0) {
 			AvgV = a;
 			alen = l;
-			min = i;
-			max = x;
-			size = max - min;
+			_min = i;
+			_max = x;
+			size = _max - _min;
 			return true;
 		}			
 	}
 	return false;
 }
 
-void t_NamedSensorAverage::Add(double v, bool bWarmup)
+// alternate add version, retrieving warmup status from _frozen() member function
+bool t_NamedSensorAverage::add(double v)
 {
-	if (bWarmup) {
-		AvgV = v;		// directly set average		// TODO: review this, use freezing-AVG instead
-	} else {
-		t_NamedAverage::Add(v);	// calculate average, update range
-	}
+	t_NamedAverage::Add(v);	// calculate average, update range
+	return _frozen();
 }
+
+
+
 
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //
 //		t_average
+//			behaves as a CMA for the first n steps where n is defined as length (alen)
 //
 //_______________________________________________
 bool t_average::_frozen(void)

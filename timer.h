@@ -64,6 +64,7 @@ TNS_UTIL_API_EXTERN char *TimeString(time_t now, char *buffer);
 //globale Variablen für den Timer
 //extern struct itimerval SavedTimer;
 
+#include "tns_util/copyright.h"
 
 #endif
 

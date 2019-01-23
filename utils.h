@@ -104,6 +104,7 @@ TNS_UTIL_API char *strip_slash(char *fullpath);		// basename()
 
 #endif
 
+#include "tns_util/copyright.h"
 
 #endif
 

@@ -3,11 +3,16 @@
  *
  *  Created on: 17.10.2013
  *      Author: pantec
+ *
+ *
+ *  implementation of a CMA = cumulative moving average
+ *
+ *  I called it freezing since the velocity of changes decreases with larger number of steps
+ *
  */
 
 #ifndef T_FREEZING_AVG_H_
 #define T_FREEZING_AVG_H_
-
 
 class t_freezing_avg {
 protected:

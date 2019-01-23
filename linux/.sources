@@ -13,6 +13,9 @@ SRCS = \
 	t_int_average.cpp	\
 	t_long_average.cpp	\
 	t_Glimpselog.cpp \
+	CooledAverage.cpp	\
+	CooledTwoStageAvg.cpp	\
+	CoolTwoStageNamedAvg.cpp	\
 	astropak.cpp \
 	timer.cpp	\
 	mkopts.cpp	\

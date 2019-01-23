@@ -1,6 +1,9 @@
 HDRS = \
 	astropak.h	\
 	cLinuxEvent.h	\
+	CooledAverage.h	\
+	CooledTwoStageAvg.h	\
+	CoolTwoStageNamedAvg.h	\
 	copyright.h	\
 	daemonic.h	\
 	ftape.h	\

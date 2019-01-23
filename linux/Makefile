@@ -28,9 +28,9 @@ WARN	= -Wall -Wno-unused
 DEBUG	= -ggdb -DDEBUG
 CODE	= -fpic # -fpcc-struct-return 
 
-MAJOR = 0
-MINOR = 9
-PATCHLEVEL = 28
+MAJOR = 1
+MINOR = 0
+PATCHLEVEL = 0
 VERSION = $(MAJOR).$(MINOR).$(PATCHLEVEL)
 
 ifeq (_${MK_DEBPKG}_,__)

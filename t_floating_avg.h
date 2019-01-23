@@ -23,7 +23,7 @@
 #define T_FLOATING_AVG_H
 
 
-
+#include "tns_util/copyright.h"
 #include "tns_util/porting.h"
 #include "tns_util/daemonic.h"
 #include "tns_util/t_freezing_avg.h"
@@ -75,12 +75,12 @@ public:
 		last = 1.0;
 		bias = 0.0;
 		freezeBoundaries = false;
-		max = -100000000000000.0;
-		min =  100000000000000.0;
+		_max = -100000000000000.0;
+		_min =  100000000000000.0;
 		size = 0.0;
 		fullScale = 1.0;
 	};
-	double max, min, size;
+	double _max, _min, size;
 	void Reset(void);
 	bool Update(double d);
 	bool HasChanged(void);
@@ -128,7 +128,6 @@ public:
 	virtual void Reset(void);
 };
 
-
 //_________________________________________________________
 //
 class t_average : public t_laverage, t_freezing_avg {
@@ -175,8 +174,15 @@ public:
 //
 class t_NamedSensorAverage : public t_NamedAverage {
 public:	
+	t_NamedSensorAverage(int len) : t_NamedAverage() {
+		Init(len);
+	};
 	virtual const char *getClassName(void) { return "t_NamedSensorAverage"; };
-	virtual void Add(double v, bool bWarmup);
+	//	virtual void Add(double v, bool bWarmup);
+	//	we dont need this warmup stuff,  anymore
+	virtual bool add(double v);
+
+	double get() { return AvgV; };
 };
 
 

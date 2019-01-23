@@ -31,6 +31,8 @@
 #include "tns_util/porting.h"
 #include "tns_util/readln.h"
 #include "tns_util/utils.h"
+#include "tns_util/daemonic.h"
+
 #ifndef MODNAME
 #define MODNAME __FILE__
 #endif
@@ -80,6 +82,7 @@ bool t_buffer::Init(char *fn)
 {
 //	int bs;
 	struct stat stat_buf;	
+	// TODO: recall filename in member variable
 	
 	int r = stat(fn,&stat_buf);
 	if (r != 0) {
@@ -119,6 +122,31 @@ int t_buffer::lowLevelRead(char *_b, int _s)
 char *t_buffer::ReadLn(void)
 {
 	char *s = &buffer[offs];
+
+	if (rd > 0) {
+		int zc = 0;
+		// skip zeros from text input
+		while (*s == '\0') {
+			offs++;
+			zc++;
+			if (offs < bufsize) {
+				s = &buffer[offs];
+			} else {
+				if (filelen < fsize) {
+					// need to reload buffer from disk
+					eot = offs;
+					break;
+				} else {
+					return NULL;
+				}
+			}
+		}
+		if (zc > 0) {
+			// TODO: include filename in output
+//			EPRINTF("skipped %d zero bytes in text-input", zc);
+		}
+	}
+
 	char *nl = strchr(s,'\n');
 
 	long int no = offs + ((nl - s)  + 1); 
@@ -134,28 +162,41 @@ char *t_buffer::ReadLn(void)
 		return NULL;	
 	}
 	lshifts++;
-
-	if (eot >= offs) {
-		for (long int i=offs; i<eot; i++)
-			buffer[i-offs] = buffer[i];
-
-		int len = eot - offs;
-		int toload = (bufsize - len);
-		if ((toload == 0) && (rd < fsize)) {
-#ifdef DEBUG
-			fprintf(stderr,"toload: %d rd: %ld, fsize: %ld\n",toload,rd,fsize);
+#ifdef DEBUG_
+	fprintf(stderr,"t_buffer::ReadLn() offs:%ld eot:%ld rd:%ld flen:%ld fsize:%ld\n",
+							offs, eot, rd, filelen, fsize);
 #endif
-			toload = __min(fsize-rd, bufsize);
+	if (eot >= offs) {
+
+		int loadAddr = eot - offs;
+		int toload = (bufsize - loadAddr);
+
+		if (offs == 0) {
+			if ((toload == 0) && (rd < fsize)) {
+//				fprintf(stderr,"correction needed toload: %d rd: %ld, laddr: %d\n", toload, rd, loadAddr);
+
+				toload = __min(fsize - filelen, bufsize);
+				loadAddr = 0;
+			}
+		} else {
+			for (long int i=offs; i<eot; i++)
+				buffer[i-offs] = buffer[i];
 		}
 
-		rd = lowLevelRead(&buffer[len],toload); 
+//		fprintf(stderr,"toload: %d rd: %ld, laddr: %d\n", toload, rd, loadAddr);
+		rd = lowLevelRead(&buffer[loadAddr], toload);
 
-		if (rd == 0) {	
-#ifdef DEBUG
-			fprintf(stderr,"read(%d,&buffer[%d],%d) = %ld failed after %ld bytes (%ld/%ld lines)\n",
-								fd,len,toload,rd,filelen,lines,lshifts);
-#endif
-			eot = len+5;
+		if (rd == 0) {
+			if (errno != 0) {
+				if (filelen != fsize) {
+					EPRINTF("t_buffer::ReadLn().read(%d,&buffer[%d],%d) = %ld failed after %ld/%ld bytes (%ld/%ld lines), error:%d %s",
+								fd, loadAddr, toload, rd, filelen, fsize, lines, lshifts, errno, strerror(errno) );
+//				} else {
+//					normal exit at end of file
+//					errno==2 on banana
+				}
+			}
+			eot = loadAddr+5;
 			offs = 0;
 
 			for (int i=0; i<8; i++) {
@@ -166,22 +207,22 @@ char *t_buffer::ReadLn(void)
 
 			return ReadLn();
 		}	
+
 	    if (rd > 0) {
 			offs = 0;
 			filelen += rd; 	
-			eot = len + rd;
+			eot = loadAddr + rd;
 
-			for (int i=0; i<64; i++)
-				buffer[eot + i] = '\0'; 
+			memset(&buffer[eot], 0, 64);
 
 			return ReadLn();
 		}
+
+		EPRINTF("!!! readln.cpp: t_buffer::ReadLn().read(%d,&buffer[%d],%d) = %ld failed after %ld bytes (%ld/%ld lines), error:%d %s",
+						fd, loadAddr, toload, rd, filelen, lines, lshifts, errno, strerror(errno) );
 	} else {	
-		fprintf(stderr,"should not happen (%ld,%ld)\n",rd,offs);	
+		EPRINTF("!!! readln.cpp: t_buffer::ReadLn(): should not happen (%ld,%ld,%ld)", rd, eot, offs);
 	}	
-#ifdef DEBUG
-	fprintf(stderr,"read(%d,&buffer) = %ld failed after %ld bytes\n",fd,rd,filelen);
-#endif
 	return NULL;
 }
 

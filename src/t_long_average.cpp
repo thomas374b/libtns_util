@@ -3,6 +3,11 @@
  *
  *  Created on: 25.05.2018
  *      Author: pantec
+ *
+ *
+ *  implementation of an EWMA for data-type "long"
+ *  EWMA = exponential weighted moving average
+ *
  */
 
 #include "t_long_average.h"

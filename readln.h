@@ -32,7 +32,9 @@
 
 class t_buffer {
 public:
-	long int filelen,lines,lshifts,fsize;
+	long int filelen;	// grows with reads
+
+	long int lines, lshifts, fsize;
 
 	bool Init(char *fn);
 	bool Init(char *fn, int bs);
@@ -49,7 +51,9 @@ public:
 private:
 	fileHandle fd;
 	int bufsize;
-	long int offs,eot,rd;
+	long int offs;		// points to the ram-address for the next line
+	long int eot;		// end of loaded text
+	long int rd;
 	bool fend;
 	char *buffer;
 };

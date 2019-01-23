@@ -138,6 +138,6 @@ typedef void (*sighandler_t)(int);
 	#endif
 #endif
 
-
+#include "tns_util/copyright.h"
 
 #endif // _DAEMONIC_H
