@@ -73,7 +73,8 @@ class t_peer {
 public:
 	unsigned int fd;
 	int id, soff, bufsize/*,RP,WP*/;
-	char connected,sent,broken,sleeping;
+	char connected, sent, broken;
+	bool silent;
 	unsigned long address;
 	char name[256],nick[256];
 	time_t conn_time,timeout;
@@ -89,6 +90,10 @@ public:
 	void Init(int new_fd,sockaddr_in *CA, int new_id);
 	t_peer *Insert(int new_fd,sockaddr_in *CA, int new_id);
 	int Write(char *st, int l);
+
+	int Read(int len);
+	int Write(int fd, char *s, int len);
+
 	void intError(time_t etime, int func);	
 	void Error(time_t etime) { intError(etime, error_from_overloaded_func); };
 	
@@ -99,11 +104,12 @@ public:
 class t_Peers {
 public:
 	fd_set Read_FD_Set;
-
+	pid_t child;
+	bool threaded_mode;
 
 	virtual ~t_Peers() {};
 
-	void Init(int max, int ss_fd);
+	void Init(int max, int ss_fd, bool threaded = false);
 	void Process(void);
 	void Done(void);
 
@@ -117,6 +123,7 @@ public:
 	virtual bool Output(t_peer *p); 
 	virtual int Write(t_peer *p, char *st, int len); 
 	virtual bool Delete(void);
+	virtual void Ignore(t_peer *peer);  // unchain only without deletion of pointers, remove from select-set
 	virtual void Prepare_Select(void);
 
 	t_peer *Last(void);
@@ -142,7 +149,7 @@ protected:
 
 private:
 	int maxp,fd_max,maxh;
-	unsigned int Server_Socket;
+	/*unsigned */int Server_Socket;
 
 };
 

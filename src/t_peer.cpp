@@ -20,6 +20,7 @@
 
 
 #include <string.h>
+#include <unistd.h>
 
 #include "tns_util/porting.h"
 #include "tns_util/t_peer.h"
@@ -31,7 +32,6 @@
 #define MODNAME __FILE__
 #endif
 #include "tns_util/copyright.h"
-
 
 const char *internal_errmsg[5] = {
 	"error_from_overloaded_func",      
@@ -53,7 +53,7 @@ void t_peer::Init(int new_fd,sockaddr_in *CA, int new_id)
 	connected = true;
 	sent = true;	// indicate empty sendqueue
 	broken = false;	// indicate cbreak mode	
-	sleeping = false;	
+	silent = false;	// if true, do not participate in Read/Write/Input/Output
 	soff = 0;		// special offset (reserved for future use)
 	bufsize = 0;
 	next = NULL;
@@ -95,7 +95,42 @@ void t_peer::Init(int new_fd,sockaddr_in *CA, int new_id)
 #endif	     
 }
 
-int t_peer::Write(char *buf,int len)
+int t_peer::Read(int len)
+{
+	if (silent) {
+#ifdef DEBUG
+		LPRINTF("thread: %d\tRead(%d) filedescriptor [%d] silenced", getpid(), len, fd);
+#endif
+		memset(buffer, 0, len);
+		return 0;
+	}
+	return readSock(fd, buffer, len);
+}
+
+
+int t_peer::Write(int fd, char *s, int len)
+{
+	if (silent) {
+#ifdef DEBUG
+		LPRINTF("thread: %d\tWrite(%d,*,%d) filedescriptor silenced", getpid(), fd, len);
+#endif
+		return len;
+	}
+	if (FD_Writeable(fd)) {
+		int ret = writeSock(fd, s, len);
+/*
+		if (fsync(fd) == -1) {
+			EPRINTF("can't fsync fd [%d]: %s", fd, strerror(errno));
+		}
+*/
+		return ret;
+	} else {
+		EPRINTF("filedescriptor [%d] not writeable: %s", fd, strerror(errno) );
+	}
+	return 0;
+}
+
+int t_peer::Write(char *buf, int len)
 {	
 	int wr = 0;
         
@@ -105,16 +140,16 @@ int t_peer::Write(char *buf,int len)
  	
     	for (int i=0; i<len; i++) {
 			if (buf[i] == '\n')
-				w += writeSock(fd,s,2);
+				w += Write(fd,s,2);
 			else
-				w += writeSock(fd,&buf[i],1);
+				w += Write(fd,&buf[i],1);
 
   	    	wr++;	
 		}
 	     // we ignore the number of written bytes from those
 	     // shitty NT-telnet clients
 	} else {
-		wr = writeSock(fd,buf,len); 
+		wr = Write(fd, buf, len);
 // 	    *buf = '\0';
 	}
 	if ((len > wr) && (wr > 0)) {
@@ -125,6 +160,7 @@ int t_peer::Write(char *buf,int len)
 		sent = true;     
 	}	
 
+//	fflush(fd);
 // 	if (wr == len)
 // 	   sent = true;
 // 	 else
@@ -148,9 +184,8 @@ t_peer *t_peer::Insert(int new_fd,sockaddr_in *CA, int new_id)
 void t_peer::intError(time_t etime, int func)
 {
 //	char st[256];
-
       switch(errno)  {
-         case 0: 
+         case 0:
          case 2:
 //         case 9:    // bad file number
 			case EAFNOSUPPORT:	
@@ -161,15 +196,18 @@ void t_peer::intError(time_t etime, int func)
 			case ENOTCONN:
 			case ECONNREFUSED:
 			case ECONNRESET:
+#ifdef DEBUG
+				EPRINTF("t_peer::Error(): %s from %s\n",strerror(errno),internal_errmsg[func]);
+#endif
 				connected = false;
 				break;
 	   
 			case EINTR:	//	 case 4:	// interrupted system call (sun)	
-#ifdef DEBUG_SOCKETS
+#ifdef DEBUG
 				EPRINTF("t_peer::Error(): %s from %s\n",strerror(errno),internal_errmsg[func]);	
 #endif	   	
 				if (func == process_input_false_func) {
-					// input must be greater than 0 if select was true, assume disconnect					
+					EPRINTF("input must be greater than 0 if select was true, assume disconnect");
 					connected = false;
 				}
 	// programs, who want disconnect here	1
@@ -182,7 +220,7 @@ void t_peer::intError(time_t etime, int func)
 //         case 11:
 			case EWOULDBLOCK:
 				if ((etime - timeout) > BLOCKED_TIMEOUT) {
-#ifdef DEBUG_SOCKETS
+#ifdef DEBUG
 					EPRINTF("EWOULDBLOCK timeout\n");
 #endif	       
 					connected = false;
@@ -237,11 +275,13 @@ t_peer *t_Peers::Insert(int new_fd, sockaddr_in *CA)
 
 
 
-void t_Peers::Init(int m, int ss_fd)
+void t_Peers::Init(int m, int ss_fd, bool th)
 {
 	maxp = m * m;
 	maxh = m;
 	Server_Socket = ss_fd;
+	child = -1;
+	threaded_mode = th;
 
 	setNonblockingIO(Server_Socket, true);
 
@@ -336,10 +376,16 @@ bool t_Peers::Validate(sockaddr_in *CA)
 	return true;
 }
 
-bool t_Peers::Accept(void)
+bool t_Peers::Accept()
 {
-	if (!FD_ISSET(Server_Socket,&Read_FD_Set))
-	   return false; 		
+	if (threaded_mode) {
+		if (Server_Socket == -1) {
+			return false;	// ignore closed server socket and continue
+		}
+	}
+
+	if (!FD_ISSET(Server_Socket, &Read_FD_Set))
+		return false;
 
 //    if (FD_Ready(Server_Socket) == false)
 //       return false;
@@ -358,7 +404,30 @@ bool t_Peers::Accept(void)
 	if (new_fd == -1) {
 		EPRINTF("accept(): %s\n",strerror(errno));
 		return false;
-	} 
+	}
+
+    if (threaded_mode) {
+//    	if (child == -1) {
+    		child = fork();
+//    	}
+
+    	switch(child) {
+    		case -1:	// error code, could not fork
+        		EPRINTF("cant fork child: %s", strerror(errno));
+        		return false;
+
+    		case 0:		// I'm the child
+    			if (Server_Socket != -1) {
+    				Server_Socket = -1;
+    			}
+    			break;	// continue this function
+
+    		default:	// I'm parent
+    			close(new_fd);
+    			return false;
+    	}
+    }
+
 	if (Validate(&ClientAddr) == false) {
 		ShutDown(new_fd);
 		return false;
@@ -381,7 +450,7 @@ bool t_Peers::Input(t_peer *p)
 #endif	
 	if (p->fd <0)
 	   return false;
-	   	
+
 	return true;
 }
 
@@ -414,12 +483,15 @@ void t_Peers::Broadcast(char *st, unsigned int l, t_peer *N)
 		}
 	      	
 		if (peer->connected == true) {
-#ifdef DEBUG_SOCKETS	      
+#ifdef DEBUG
 			fprintf(stderr,"t_Peers::Broadcasts(0x%lx)\n",(long)peer);
 #endif	       
 			if (peer->reserved != NULL) {
 				if (peer->reserved->blockedBroadcast(N)) {
 					// this peer was elected _not_ to receive broadcasts from N
+#ifdef DEBUG
+					fprintf(stderr, "skip broadcasting for peer %08lx", peer->address);
+#endif
 					peer = peer->next;
 					continue;
 				}
@@ -438,7 +510,7 @@ void t_Peers::Broadcast(char *st, unsigned int l, t_peer *N)
 			}
 
 			if (peer->sent == false) {
-				peer->intError(time(0),broadcast_sent_false_func);
+				peer->intError(time(0), broadcast_sent_false_func);
 			}
 		}
 		peer = peer->next;
@@ -457,12 +529,14 @@ void t_Peers::Prepare_Select(void)
 	FD_ZERO(&Read_FD_Set);	
 
 	FD_MaxNum = 0;
-	FD_MaxNum = __max(Server_Socket, FD_MaxNum);	
-	FD_SET(Server_Socket, &Read_FD_Set);
+	FD_MaxNum = __max(Server_Socket, FD_MaxNum);
+	if (Server_Socket != -1) {
+		FD_SET(Server_Socket, &Read_FD_Set);
+	}
 
 	t_peer *peer = first;
 	while (peer != NULL) {
-		if (peer->connected == true) {
+		if ((peer->connected == true) && (peer->silent == false)) {
 			FD_SET(peer->fd, &Read_FD_Set);
 
 			if (FD_MaxNum < peer->fd)
@@ -473,7 +547,25 @@ void t_Peers::Prepare_Select(void)
 }
 
 
+// unchain only without deletion of pointers, remove from select-set
+void t_Peers::Ignore(t_peer *peer)
+{
+	t_peer *p;
 
+	if (first == NULL) {
+	   return;
+	}
+	p = first;
+	while (p != NULL) {
+		if (p == peer) {
+			p->silent = true;
+			// remove fd from select set
+			// ignore in processing Input/Output/Write/Read
+			close(p->fd);
+		}
+		p = p->next;
+	}
+}
 
 bool t_Peers::Delete(void)
 {
@@ -530,7 +622,7 @@ bool t_Peers::Delete(void)
 
 
 
-void t_Peers::CheckInput(void)
+void t_Peers::CheckInput()
 {
 	Prepare_Select();
 
@@ -544,7 +636,7 @@ void t_Peers::CheckInput(void)
 }
 
 
-void t_Peers::Process(void)
+void t_Peers::Process()
 {
 	CheckInput();
 
@@ -553,7 +645,7 @@ void t_Peers::Process(void)
 	while (peer != NULL) {
 		if (FD_ISSET(peer->fd,&Read_FD_Set)) {
 			if (peer->connected == true) {
-#ifdef DEBUG_SOCKETS	      
+#ifdef DEBUG_SOCKETS
 				EPRINTF("t_Peers::Process(0x%lx)\n",(long)peer);
 #endif	       
 			}
@@ -561,13 +653,13 @@ void t_Peers::Process(void)
 				// reset timeout counter because some bytes were read
 				peer->timeout = time(0);
 				if (Output(peer) == false) {
-					peer->intError(time(0),process_output_false_func);  
+					peer->intError(time(0), process_output_false_func);
 				} else {
 					// reset timeout counter because some bytes were written
 					peer->timeout = time(0);	
 				}	
 			} else {
-				peer->intError(time(0),process_input_false_func);  
+				peer->intError(time(0), process_input_false_func);
 			}	
 		} else {
 // 	       long to = time(0) - peer->timeout;
