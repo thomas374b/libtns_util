@@ -103,20 +103,22 @@ typedef void (*sighandler_t)(int);
 							do_logging(TARGETNAME,z);	\
 						}
 
-			#define EPRINTF(fmt,args...)	{									\
-								if (detached == false) {				\
-									fprintf(stderr,fmt,##args);			\
-									fprintf(stderr,"\n");			\
-								} else {								\
-									if (elogf != NULL) {				\
-										fprintf(elogf,fmt,##args); 		\
-										fprintf(elogf,"\n");			\
-										fflush(elogf);				\
-									} else {							\
-										char z[4096];				\
-										snprintf(z,3072,fmt,##args);		\
-										do_logging(TARGETNAME,z);	\
+			#define EPRINTF(fmt,args...)	{						\
+								char z[4096];						\
+								snprintf(z,3072,fmt,##args);		\
+								FILE *errf = stderr;				\
+								if (detached == true) {				\
+									if (elogf != NULL) {			\
+										errf = elogf;				\
+									} else {						\
+										errf = NULL;				\
 									}								\
+								}									\
+								if (errf == NULL) {					\
+									do_logging(TARGETNAME,z);		\
+								} else {							\
+									fprintf(errf,"%s\n",z); 		\
+									fflush(errf);					\
 								}									\
 							}			
 							

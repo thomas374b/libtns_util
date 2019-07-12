@@ -76,14 +76,54 @@ bool CooledAverage::add(double v)
 		_cache.sum += v;			// neuer rein
 		_cache.val = _cache.sum / filled;
 
-		// this is tracking, not skipping
-		if (v >= _max) {
-			_max = v;
-		}
-		if (v <= _min) {
-			_min = v;
-		}
 		_cache.changed = false;
+
+		// this is tracking, not skipping
+		if (v > _max) {
+			_max = v;
+
+			if (idx != maxIdx) {
+				maxIdx = idx;
+//				_cache.changed = true;
+				// recompute _min
+
+				_min =  100000000000000.0;
+				minIdx = -1;
+				for (int i=0; i<filled; i++) {
+					if (i == idx) {
+						continue;
+					}
+					if (data[i] < _min) {
+						minIdx = i;
+						_min = data[i];
+					}
+				}
+
+			}
+		}
+		if (v < _min) {
+			_min = v;
+			if (idx != minIdx) {
+				minIdx = idx;
+//				_cache.changed = true;
+				// recompute _max
+
+				_max =  -100000000000000.0;
+				maxIdx = -1;
+				for (int i=0; i<filled; i++) {
+					if (i == idx) {
+						continue;
+					}
+					if (data[i] > _max) {
+						maxIdx = i;
+						_max = data[i];
+					}
+				}
+
+//			} else {
+				// old min is overwritten with new min, i.e. max stays same
+			}
+		}
 	} else {
 		_cache.changed = true;	// needs recalculation in get
 	}
@@ -103,16 +143,17 @@ double CooledAverage::findMinMax()
 {
 	_max = -100000000000000.0;
 	_min =  100000000000000.0;
+
 	maxIdx = -1;
 	minIdx = -1;
 
 	double sum = 0.0;
 	for (int i=0; i<filled; i++) {
-		if (data[i] >= _max) {
+		if (data[i] > _max) {
 			maxIdx = i;
 			_max = data[i];
 		}
-		if (data[i] <= _min) {
+		if (data[i] < _min) {
 			minIdx = i;
 			_min = data[i];
 		}

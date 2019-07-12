@@ -74,7 +74,7 @@ char compiler_info[] =
 	/* extern char version_string[]; */
 	/* extern char revision_date[]; */
 
-extern const char copyright_info[];
+extern char copyright_info[];
 
 #ifndef MODNAME
 	#define MODNAME __FILE__
