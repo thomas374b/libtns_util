@@ -21,7 +21,7 @@
 
 #include "tns_util/porting.h"
 #include "tns_util/utils.h"
-
+#include "tns_util/daemonic.h"
 
 //#define SHOW_COMPILER_MOD 
 #ifndef MODNAME
@@ -264,5 +264,100 @@ char strnrcmp(char *s1, char *s2, unsigned int len)
 	   return true;
 
 	return false;
+}
+
+
+
+
+int fileRead(const char *fn_arg, char *buffer, int len)
+{
+	int fd = open(fn_arg, O_RDONLY);
+	if (fd < 0) {
+		fprintf(stderr, "%s:%d: can't open file [%s], %s, %d\n", __FILE__, __LINE__, fn_arg, strerror(errno), errno);
+    	return -errno;
+	}
+	int r = read(fd, buffer, len );
+	close(fd);
+	if (r == len) {
+	    fprintf(stderr, "not all bytes read, buffer exhausted @ %d\n", len);
+	}
+    return r;
+}
+
+int fileReadInt(const char *fn)
+{
+	char buffer[128];
+	memset(buffer, 0, 128);
+
+	int len = fileRead(fn, buffer, 128);
+	if (len < 0) {
+		return len;
+	}
+	int result = 0;
+	int n = sscanf(buffer, "%d", &result);
+	if (n == 1) {
+		return result;
+	}
+	fprintf(stderr, "scan result of [%s] = %d, len:%d\n", buffer, n, len);
+	return -1;
+}
+
+
+
+
+
+int getIntFromEnv(const char *name, int defaultValue)
+{
+	char *v = getenv(name);
+	if (v == NULL) {
+		return defaultValue;
+	}
+	int d;
+	if (sscanf(v, "%d", &d) == 1) {
+		EPRINTF("overriding defaults for %s from user settings to %d", name, d);
+		return d;
+	}
+	return defaultValue;
+}
+
+float getFloatFromEnv(const char *name, float defaultValue)
+{
+	char *v = getenv(name);
+	if (v == NULL) {
+		return defaultValue;
+	}
+	float d;
+	if (sscanf(v, "%f", &d) == 1) {
+		EPRINTF("overriding defaults for %s from user settings to %f", name, d);
+		return d;
+	}
+	return defaultValue;
+}
+
+
+bool getBoolFromEnv(const char *name, bool defaultValue)
+{
+	char *v = getenv(name);
+	if (v == NULL) {
+		return defaultValue;
+	}
+	char yesIndices[] = "1yYjJ";
+	char noIndices[] = "0nN";
+
+	for (uint8_t i=0; i<5; i++) {
+		char *y = strchr(v, yesIndices[i]);
+		if (y != NULL) {
+			EPRINTF("overriding defaults for %s from user settings to true", name);
+			return true;
+		}
+	}
+	for (uint8_t i=0; i<3; i++) {
+		char *y = strchr(v, noIndices[i]);
+		if (y != NULL) {
+			EPRINTF("overriding defaults for %s from user settings to false", name);
+			return false;
+		}
+	}
+	return defaultValue;
 }
 

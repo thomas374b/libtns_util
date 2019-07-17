@@ -64,6 +64,14 @@ TNS_UTIL_API char *sprint_kM(double d, char *buf);
 
 TNS_UTIL_API char *strip_slash(char *fullpath);		// basename()
 
+TNS_UTIL_API int fileRead(const char *fn_arg, char *buffer, int len);
+TNS_UTIL_API int fileReadInt(const char *fn);
+TNS_UTIL_API int getIntFromEnv(const char *name, int defaultValue);
+TNS_UTIL_API float getFloatFromEnv(const char *name, float defaultValue);
+TNS_UTIL_API bool getBoolFromEnv(const char *name, bool defaultValue);
+
+
+
 //extern void ErrorMsg(const char st[]);
 #define ErrorMsg(x, y)		{fprintf(stderr,"%s: %s\n", x, strerror(y)); }
 //extern void ErrorMsg(const char st[],int n);
