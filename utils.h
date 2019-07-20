@@ -43,9 +43,9 @@
 	extern int __min(int a, int b);
 #endif
 
-TNS_UTIL_API int FD_Ready(unsigned int fd); 
-TNS_UTIL_API int FD_ReadyTo(unsigned int fd, int to);
-TNS_UTIL_API int FD_Writeable(unsigned int fd);
+TNS_UTIL_API int FD_Ready(int fd);
+TNS_UTIL_API int FD_ReadyTo(int fd, int to);
+TNS_UTIL_API int FD_Writeable(int fd);
 
 TNS_UTIL_API bool fexist(char *s);			// return true if file "s" exists
 TNS_UTIL_API long int filelen(char *s);	// return -1 if file doesnt exist

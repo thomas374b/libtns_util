@@ -116,13 +116,13 @@ int log2(int n)
 // ist wahr, wenn es aus der Datei des Filedescriptors 'was zu lesen gibt  
 // gewartet wird ca. 10ms
 //______________________________________________________________________
-int FD_Ready(unsigned int fd)		// return true if input data available
+int FD_Ready(int fd)		// return true if input data available
 {
 	return FD_ReadyTo(fd, 10000);
 }
 
 
-int FD_ReadyTo(unsigned int fd, int to)	// same with user timeout in µsec
+int FD_ReadyTo(int fd, int to)	// same with user timeout in µsec
 {
   fd_set Read_Set;
   struct timeval TimeOut;
@@ -149,7 +149,7 @@ int FD_ReadyTo(unsigned int fd, int to)	// same with user timeout in µsec
 	}
 }
 
-int FD_Writeable(unsigned int fd)	// return true if fd is _IMMEDEATLY_ writeable
+int FD_Writeable(int fd)	// return true if fd is _IMMEDEATLY_ writeable
 {
   fd_set Write_Set;
   struct timeval TimeOut;
