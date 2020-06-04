@@ -8,7 +8,7 @@
 #include "t_int_average.h"
 
 #include <stdio.h>
-
+#include <math.h>
 
 t_int_average::t_int_average(int len)
 {
@@ -30,6 +30,10 @@ t_int_average::t_int_average(int len)
 	sum = 0;
 	gradSum = 0;
 
+	lastGradient = 0;
+	atTop = false;
+	atBottom = false;
+
 	fprintf(stderr,"len:%d  mod:0x%02x  pow:%d\n", length, mod, pow );
 }
 
@@ -38,6 +42,39 @@ void t_int_average::minMaxReset()
 	min =  2147483647;
 	max = -2147483647;
 }
+
+int t_int_average::trackGradient(int g)
+{
+	if ((lastGradient < 0) && (g > 0)) {
+		atBottom = true;
+	}
+	if ((lastGradient > 0) && (g < 0)) {
+		atTop = true;
+	}
+	lastGradient = g;
+	return g;
+}
+
+
+bool t_int_average::isAtBottom()
+{
+	if (atBottom) {
+		atBottom = false;
+		return true;
+	}
+	return false;
+}
+
+bool t_int_average::isAtTop()
+{
+	if (atTop) {
+		atTop = false;
+		return true;
+	}
+	return false;
+}
+
+
 
 void t_int_average::adjustMaxMin(int v)
 {
@@ -51,6 +88,7 @@ void t_int_average::adjustMaxMin(int v)
 
 void t_int_average::add(int v)
 {
+/*
 	short idx_1 = (idx + mod) & mod;
 
 	int dp = 0;
@@ -64,10 +102,13 @@ void t_int_average::add(int v)
 		dm = data[idx] - data[idx_1];
 	}
 	gradSum -= dm;
+*/
+	gradSum = v - data[idx];
+	sum += gradSum;
 
-	sum -= data[idx];		// alter wert raus
+//	sum -= data[idx];		// alter wert raus
 	data[idx] = v;
-	sum += data[idx];		// neuer rein
+//	sum += data[idx];		// neuer rein
 
 	adjustMaxMin(v);
 
@@ -86,9 +127,9 @@ int t_int_average::gradient()
 			fprintf(stderr, "t_int_average::gradient() division by zero\n");
 			return 0;
 		}
-		return gradSum / cnt;
+		return trackGradient(gradSum / cnt);
 	}
-	return gradSum >> pow;
+	return trackGradient(gradSum >> pow);
 }
 
 int t_int_average::value()
@@ -152,10 +193,12 @@ int t_int_average::cooked()
 double t_int_average::Filtered(double scale)
 {
 	int R = range();
+
 	if (R == 0) {
 		fprintf(stderr, "t_int_average::Filtered() division by zero\n");
-		return 0;
+		return 0.0;
 	}
+
 	int C = cooked();
 
 	if (min >= 0) {
@@ -178,5 +221,23 @@ char *t_int_average::Printf(char *buf)
 t_int_average::~t_int_average()
 {
 	delete data;
+}
+
+
+/**
+ * return  information according to Shannon
+ */
+double t_int_average::Info(void)
+{
+	double S = 0.0;
+
+	for (int i=0; i<cnt; i++) {
+		if (data[i] > 0) {
+			S += (data[i] * log((double)data[i]));
+		}
+	}
+
+	double d = -S / log((double)length);
+	return d;
 }
 

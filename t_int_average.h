@@ -20,6 +20,12 @@ private:
 	int *data;
 	long sum;
 	long gradSum;
+	int lastGradient;
+	bool atTop, atBottom;
+
+	int trackGradient(int g);
+
+protected:
 public:
 	t_int_average(int len);
 	virtual ~t_int_average();
@@ -31,10 +37,16 @@ public:
 	int cooked();
 
 	double Filtered(double scale);
+
+	bool isAtTop();
+	bool isAtBottom();
+
 	char *Printf(char *b);
 
 	void adjustMaxMin(int v);
 	void minMaxReset();
+
+	double Info(void);
 };
 
 #endif /* TINTAVERAGE_H_ */

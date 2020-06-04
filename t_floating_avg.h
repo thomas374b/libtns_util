@@ -118,6 +118,14 @@ public:
 		gradient = 0.0;
 		delta = 0.0;
 	};
+
+	t_laverage(int L) {
+		AvgV = 1.0;
+		alen = L;
+		gradient = 0.0;
+		delta = 0.0;
+	};
+
 	virtual ~t_laverage() {
 	};
 

@@ -699,7 +699,7 @@ void t_Peers::Done(void)
        first = first->next;	
        delete delp;
        count--;
-      } 
+    }
 }
 
 
