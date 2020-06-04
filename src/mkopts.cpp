@@ -27,12 +27,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <ctype.h>
 
-#include "tns_util/porting.h"
-#include "tns_util/readln.h"
-#include "tns_util/mkopts.h"
-#include "tns_util/utils.h"
-#include "tns_util/netutils.h"
 
 #ifndef MODNAME
 #define MODNAME __FILE__
@@ -46,6 +42,13 @@
 #ifndef PREFIX
 	#define PREFIX	"/opt"
 #endif
+
+#include "tns_util/porting.h"
+#include "tns_util/readln.h"
+#include "tns_util/mkopts.h"
+#include "tns_util/utils.h"
+#include "tns_util/netutils.h"
+#include "tns_util/daemonic.h"
 
 
 bool verbose_mode;
@@ -91,6 +94,58 @@ bool short_of(char F, char *argvi, t_opts opts[])
 	return false;
 }
 
+int Hex2Num(char C)
+{
+	if ((C >= '0') && (C <= '9')) {
+		return (C - '0');
+	}
+	if ((C >= 'A') && (C <= 'F')) {
+		return (C - 'A')+10;
+	}
+	if ((C >= 'a') && (C <= 'f')) {
+		return (C - 'a')+10;
+	}
+	return -1;
+}
+
+unsigned char Hex2Byte(char *S)
+{
+	return (Hex2Num(S[0]) << 4) | Hex2Num(S[1]);
+}
+
+
+bool check_hexnum_(char *fn, int *_addr)
+{
+	char st[256];
+	int d;
+
+	if (sscanf(fn,"0x%s",st) == 1) {
+		if (verbose_mode) {
+		    fprintf(stderr,"parsing hex.num: [%s]\n", fn);
+		}
+		char *s = st;
+		*_addr = 0;
+		int hn = 0;
+		while (strlen(s) > 1) {
+			hn = Hex2Num(*s);
+			if (hn < 0) {
+				return false;
+			}
+
+			*_addr |= (uint8_t)(hn & 0xFF);
+			*_addr <<= 4;
+		    s++;
+		}
+		hn = Hex2Num(*s);
+		if (hn < 0) {
+			return false;
+		}
+		*_addr |= (uint8_t)(hn & 0xFF);
+		return true;
+	}
+	return false;
+}
+
 
 // 
 // char *strip_slash(char *argv0)
@@ -122,6 +177,10 @@ void print_arg_defaults(char *argv0, t_opts opts[])
 		 else
 		   fprintf(stderr,"(false)\n");  
 		break;
+
+	    case e_hexnum:
+	    	fprintf(stderr,"(0x0%X)\n",opts[k].i);
+	    	break;
 
 	      case e_integer:
 		  case e_port:
@@ -243,6 +302,7 @@ void save_manstyle_opts(char *argv0, t_opts opts[])
 			opts[k].flag,opts[k].longflag,opts[k].helptext);	   
 		break;
 
+	      case e_hexnum:
 	      case e_integer:
 	      case e_port:
 		sprintf(st,".TP\n.B \\fB\\-\\^%c\\fR \\fI<%s_number>\\fR\n%s.\n",
@@ -342,6 +402,7 @@ void save_opts_file(char *argv0, t_opts opts[])
 			opts[k].longflag,opts[k].b,opts[k].helptext);	   
 		break;
 
+	      case e_hexnum:
 	      case e_integer:
 		  case e_port:
 		sprintf(st,"%s\t%d\t\t\t#  %s\n",
@@ -371,6 +432,24 @@ void save_opts_file(char *argv0, t_opts opts[])
 }
 
 
+char *str_tolower(char *src, char *buf)
+{
+	if (src == NULL) {
+		EPRINTF("%s::%s() src is NULL", __FILE__, __func__);
+		return buf;
+	}
+	if (buf == NULL) {
+		EPRINTF("%s::%s() buf is NULL", __FILE__, __func__);
+		return buf;
+	}
+	memset(buf, 0, strlen(src)+1);
+
+	for (uint16_t i=0; i<strlen(src); i++) {
+		buf[i] = tolower(src[i]);
+	}
+	return buf;
+}
+
 int scan_integer(int *result, int argc, char *argv[], int i, char flag, const char *longflag)
 {
 	if (result == NULL) {
@@ -380,42 +459,40 @@ int scan_integer(int *result, int argc, char *argv[], int i, char flag, const ch
 	char c[256];	/* formatString */
 	int d;
 
-	/* angeklitscht */
-	sprintf(c,"-%c0x%%x",flag);	
+	/* angeklitscht, dezimal */
+	sprintf(c,"-%c%%d",flag);
 	if (sscanf(argv[i],c,&d) == 1) {
 		*result = d;
 		if (verbose_mode == true) {
-			fprintf(stderr,"got argument %s from hex number := %d\n",longflag, *result);
+			fprintf(stderr,"got argument %s from int number := %d\n",longflag, *result);
 		}
 		return 1;
-	} else {
-		sprintf(c,"-%c%%d",flag);	
-		if (sscanf(argv[i],c,&d) == 1) {
-			*result = d;	
-			if (verbose_mode == true) {
-				fprintf(stderr,"got argument %s from int number := %d\n",longflag, *result);			
-			}
-			return 1;
-		} 		     	
 	}
 
+#if 0
+	/* angeklitscht, hex geht scheisse */
+	if (check_hexnum_(&argv[i][2], result)) {
+		if (verbose_mode == true) {
+			fprintf(stderr,"got argument %s from hex number %X := %d\n", longflag, *result, *result);
+		}
+		return 1;
+	}
+#endif
 
 	/* zwei argumente */	
 	if (argc > i+1) {
-		if (sscanf(argv[i+1],"0x%x",&d) == 1) {
+		if (check_hexnum_(argv[i+1], result)) {
+			if (verbose_mode == true) {
+				fprintf(stderr,"got argument %s from hex number %X := %d\n", longflag, *result, *result);
+			}
+			return 2;
+		}
+		if (sscanf(argv[i+1],"%d",&d) == 1) {
 			*result = d;
 			if (verbose_mode == true) {
-				fprintf(stderr,"got argument %s from hex number := %d\n",longflag, *result);
+				fprintf(stderr,"got argument %s from int number := %d\n",longflag, *result);
 			}
-			return 2;	
-		} else {
-			if (sscanf(argv[i+1],"%d",&d) == 1) {
-				*result = d;
-				if (verbose_mode == true) {
-					fprintf(stderr,"got argument %s from int number := %d\n",longflag, *result);
-				}
-				return 2;
-			}
+			return 2;
 		}
 	} 
 /*	
@@ -475,6 +552,8 @@ void scan_opts_file(char *argv0, t_opts opts[])
 		       opts[j].b = (i>0);
 		   break;			
 
+
+		 case e_hexnum:
 		 case e_integer:
 		 case e_port:
 		   sprintf(format,"%s %%d",opts[j].longflag);  	
@@ -669,7 +748,8 @@ void scan_args(int argc, char *argv[], t_opts opts[])
 							}
 						}
 			 			break;
-						
+
+					case e_hexnum:
 					case e_integer:
 						switch (scan_integer(&(opts[j].i), argc, argv, i, opts[j].flag, opts[j].longflag)) {
 							case 2:

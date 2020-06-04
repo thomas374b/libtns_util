@@ -27,12 +27,14 @@
 typedef void (*t_arg_handler)(int i, double f, char *s);
 typedef void (*t_unknown_arg_handler)(int i, char *v);
 
-enum t_kind {	e_unknown, 
-				e_boolean, 
-				e_integer, 
+enum t_kind {
+				e_unknown,
+				e_boolean,
+				e_integer,
 				e_float, 
 				e_string, 
-				e_port		/* portnumber/service argument, is string or number */ 
+				e_port,		/* portnumber/service argument, is string or number */
+				e_hexnum,
 			};
 
 typedef struct {
@@ -57,6 +59,10 @@ typedef struct {
 TNS_UTIL_API void print_arg_defaults(char *argv0, t_opts opts[]);
 TNS_UTIL_API void scan_args(int argc, char *argv[], t_opts opts[]);
 TNS_UTIL_API void empty_func(int , double, char *);
+
+TNS_UTIL_API char *str_tolower(char *src, char *buf);
+// TNS_UTIL_API unsigned char Hex2Byte(char *S);
+
 
 TNS_UTIL_API_EXTERN bool verbose_mode;
 
