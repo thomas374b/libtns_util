@@ -90,7 +90,7 @@ char *cLinuxEvent::get(char *buffer, short len)
 	int n = got / sizeof(input_event);
 	sprintf(buffer, "got %d, %d bytes, %d items: ", got , sizeof(input_event), n);
 
-	char C[16];
+	char C[32];
 	for (int i=0; i<n; i++) {
 		sprintf(C, " t:%d c:%d v:%d", scan[n].type, scan[n].code, scan[n].value);
 		strcat(buffer, C);

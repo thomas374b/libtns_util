@@ -166,7 +166,7 @@ void write_pidfile(const char *target)
 	snprintf(st,768,"/var/run/%s.pid",target);	
 	fileHandle fd = openFileMode(st, O_RDWR|O_CREAT|O_TRUNC, 0644);
 	if (fd < 0) {
-		char s2[1024];
+		char s2[1024+32];
 		sprintf(s2,"open(\"%s\")",st);
 		perror(s2);
 		return;
