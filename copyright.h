@@ -53,20 +53,20 @@
 	/* char revision_date[] = "last revision: \t"REVISION"\n\0"; */
 
 char copyright_info[] =
-	TARGETNAME" v"VERSION", rev. "REVISION",   copyright: "AUTHOR"\n\0";
+	TARGETNAME " v" VERSION ", rev. " REVISION ",   copyright: " AUTHOR "\n\0";
 
 #ifdef SHOW_COMPILER_MOD
 char compiler_info[] =
-	"host: "COMPILER_HOST", compiler: "COMPILER_EXE", version: "COMPILER_VERSION"\n\0";
+	"host: " COMPILER_HOST ", compiler: " COMPILER_EXE ", version: " COMPILER_VERSION "\n\0";
 #else
 char compiler_info[] =
-	"version: "COMPILER_VERSION"\n\0";
+	"version: " COMPILER_VERSION "\n\0";
 #endif
 
 #else
 #ifdef SHOW_COMPILER_MOD
 	static char compiler_sss[] = 
-	"compiler: "COMPILER_EXE" "COMPILER_VERSION" @ "COMPILER_HOST"\n\0";
+	"compiler: " COMPILER_EXE " " COMPILER_VERSION " @ " COMPILER_HOST "\n\0";
 
 #else
 	extern char compiler_info[];
