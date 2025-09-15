@@ -562,9 +562,10 @@ clean:
 	@rm -f a.out $(OPA)/*.o core $(OPA)/lib*.so* $(OPA)/lib*.a $(OPA)/$(TARGET).pc $(O_MAKE_T) built/.versions	
 	@find built/ -type f -name "*.dep" -empty -exec rm {} \;	
 
-distclean: debclean
+distclean:
 	if test -L $(TARGET); then rm $(TARGET); fi
 	rm -rf ./built moc_*.cpp uic_*.cpp .*_o core a.out *.bck *.bak .*.bak .*.bck Makefile-* .hc~*~
+	rm *.h *.cpp .cache-$(DEVICE) .$(UMA)_o
 	chmod 440 .headers .sources .defines
 
 $(O_KMOD): cflag_info $(OBJS)
@@ -921,7 +922,7 @@ endif	# i f e q (_$(UNAME)$(MACHINE)_,__)
 
 .cache-$(DEVICE):
 	@(echo UNAME = $(shell uname|sed -e "s/HP\-UX/hpux/g;s/CYGWIN_NT-\([45]\).\([01]\)/cygwin/g"); \
-	if [ "$(CROSS)" = "" ]; then echo MACHINE = $(shell uname -m|sed -e "s/0000[0-9A-F]*00/rs6000/g"); \
+	if [ "$(CROSS)" = "" ]; then echo MACHINE = $(shell uname -m|sed -e "s/0000[0-9A-F]*00/rs6000/g;s/x86_64/x86-64/g"); \
 	if [ "$(shell uname)" != "Linux" ]; then echo KERNEL_VERSION = "$(shell uname -r)"; else 	\
 	echo KERNEL_VERSION = $(shell grep UTS_RELEASE /usr/src/linux/include/linux/*.h|cut -d\" -f 2|head -1);	\
 	fi; else echo MACHINE = strongarm; \
