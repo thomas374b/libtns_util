@@ -93,7 +93,7 @@ void t_GlimpseLog::Write(char *msg)
 	strcpy(lastlogstring, st);
 	int w = writeFd(fd,st,l2);
 	if (w != l2) {
-		EPRINTF4("error:%d, only %d of %d bytes written: %s, maxlen: %d\n",errno,w,strlen(st),strerror(errno),maxlen);
+		EPRINTF4("error:%d, only %d of %d bytes written: %s, maxlen: %d\n",errno,w,(int)strlen(st),strerror(errno),maxlen);
 	}
 	closeFd(fd);
 }

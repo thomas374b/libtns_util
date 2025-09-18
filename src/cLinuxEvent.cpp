@@ -88,7 +88,7 @@ char *cLinuxEvent::get(char *buffer, short len)
 	}
 
 	int n = got / sizeof(input_event);
-	sprintf(buffer, "got %d, %d bytes, %d items: ", got , sizeof(input_event), n);
+	sprintf(buffer, "got %d, %d bytes, %d items: ", got , (int)sizeof(input_event), n);
 
 	char C[32];
 	for (int i=0; i<n; i++) {
@@ -120,7 +120,7 @@ __u16 *cLinuxEvent::getFiltered(int to)
 		}
 		if (got != sizeof(input_event)) {
 			// TODO: sync reading with blocking IO
-			EPRINTF("got garbage: %d != %d",  got, sizeof(input_event));
+			EPRINTF("got garbage: %d != %d",  got, (int)sizeof(input_event));
 			return NULL;
 		}
 		for (int i=0; i<used_scancodes; i++) {

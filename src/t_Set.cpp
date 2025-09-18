@@ -238,7 +238,7 @@ char *t_Set::Print(char *st)
 		}			
 	}  
 	st[k] = '\0';
-	fprintf(stderr,"%d/%d, %s\n",strlen(st),size,st);
+	fprintf(stderr,"%d/%d, %s\n",(int)strlen(st),size,st);
 	return st;
 }
 
